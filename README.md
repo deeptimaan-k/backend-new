@@ -3,8 +3,11 @@
 <h2>to start a server :</h2>
 
 cd backend
+<br>
 npm install
+<br>
 npm start
+<br>
 
 <h3>api's done :</h3>
 
