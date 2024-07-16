@@ -6,7 +6,7 @@ const Teacher = require('../models/teacherSchema.js');
 const Subject = require('../models/subjectSchema.js');
 const Notice = require('../models/noticeSchema.js');
 const Complain = require('../models/complainSchema.js');
-
+const { sendNotification } = require('./notificationController');
 // const adminRegister = async (req, res) => {
 //     try {
 //         const salt = await bcrypt.genSalt(10);
@@ -148,5 +148,23 @@ const getAdminDetail = async (req, res) => {
 // }
 
 // module.exports = { adminRegister, adminLogIn, getAdminDetail, deleteAdmin, updateAdmin };
+
+
+// Example function in admin controller or route
+const sendNotificationToRecipient = async (req, res) => {
+    const { recipientType, recipientId, message } = req.body;
+    try {
+        // Logic to send message
+        await sendNotification(recipientType, recipientId, message);
+        res.json({ success: true, message: 'Notification sent successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Failed to send notification' });
+    }
+};
+
+module.exports = {
+    sendNotificationToRecipient
+};
 
 module.exports = { adminRegister, adminLogIn, getAdminDetail };
