@@ -66,32 +66,75 @@ const addClassSubjectChapter = async (req, res) => {
 };
 
 const addAssignment = async (req, res) => {
-    const { classId, subject, chapter, topic, title, questions } = req.body;
+    const { class: className, subject, chapter, topic, title, ques_type, num_ques } = req.body;
 
     try {
+        // Fetch the class document based on class name and subject
+        const classroom = await AiClassS.findOne({ class: className, subject });
+        if (!classroom) {
+            return res.status(404).json({ message: 'Class and subject not found' });
+        }
+
+        // Prepare request payload
+        const requestPayload = {
+            class: className,
+            subject,
+            chapter,
+            ques_type,
+            num_ques
+        };
+
+        // console.log('Request Payload:', requestPayload);
+
+        const response = await axios.post('https://7e83-2409-4089-ab0c-638f-f99f-83f1-8a31-ec49.ngrok-free.app/getQues/', requestPayload);
+
+        // console.log('API Response:', response.data);
+
+        const questions = response.data.questions;
+
+        const formattedQuestions = questions.map(question => ({
+            question: question.question,
+            options: question.options,
+            correct: question.correct
+        }));
+
+        // Create a new Assignment document
         const newAssignment = new Assignment({
             title,
-            classId,
+            classId: classroom._id,
             subject,
             chapter,
             topic,
-            questions
+            questions: formattedQuestions
         });
 
         const savedAssignment = await newAssignment.save();
 
-        const classroom = await AiClassS.findById(classId);
         const chapterIndex = classroom.chapters.findIndex(ch => ch.title === chapter);
 
         if (chapterIndex !== -1) {
             classroom.chapters[chapterIndex].assignments.push(savedAssignment._id);
             await classroom.save();
+        } else {
+            classroom.chapters.push({
+                title: chapter,
+                assignments: [savedAssignment._id]
+            });
+            await classroom.save();
         }
 
         res.status(201).json(savedAssignment);
     } catch (error) {
-        console.error('Error adding assignment:', error);
-        res.status(500).json({ message: 'Internal server error', error });
+        console.error('Error adding assignment:', error.message);
+        if (error.response) {
+            console.error('Error Response Data:', error.response.data);
+            console.error('Error Response Status:', error.response.status);
+        } else if (error.request) {
+            console.error('Error Request Data:', error.request);
+        } else {
+            console.error('Error Message:', error.message);
+        }
+        res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 };
 
