@@ -68,6 +68,20 @@ const verifyJWT = require("../middleware/authenticate.middleware.js");
 const { upload } = require("../middleware/multer.middlewares.js");
 const verifyAdminRole = require("../middleware/verifyAdminRole.middleware.js");
 
+const{
+  addClassSubjectChapter,
+  addAssignment,
+  getClassSubjectDetails,
+  getAssignmentsByTopic
+} = require("../controllers/ai-classroom-controller.js");
+
+const {
+  uploadNotes
+} = require("../controllers/notes-controller.js");
+
+const {
+  submitTest
+}= require("../controllers/result-controller.js")
 // Admin
 
 router.post("/AdminReg", upload.single("avatar"), adminRegister);
@@ -173,5 +187,25 @@ router.get("/Subject/:id", getSubjectDetail);
 router.delete("/Subject/:id", deleteSubject);
 router.delete("/Subjects/:id", deleteSubjects);
 router.delete("/SubjectsClass/:id", deleteSubjectsByClass);
+
+//AI classroom 
+
+// router.get('/:class/:subject', getClassData);
+// router.get('/:class/:subject/:chapter/:topic/assignments', getAssignments);
+// router.post('/addClass',addClassroom);
+router.post('/classroom', addClassSubjectChapter);
+
+// Route to add assignment
+router.post('/assignment', addAssignment);
+router.get('/classroom/:class/:subject', getClassSubjectDetails);
+router.get('/classroom/:className/:subject/:chapter/:topic/assignments', getAssignmentsByTopic);
+
+
+//assignment submit
+router.post('/assignment/submit', submitTest);
+
+//notes upload
+router.post('/uploadNotes', uploadNotes);
+
 
 module.exports = router;
