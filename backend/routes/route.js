@@ -1,5 +1,5 @@
 const router = require('express').Router();
-
+const paymentController = require('../controllers/paymentController');
 // const { adminRegister, adminLogIn, deleteAdmin, getAdminDetail, updateAdmin } = require('../controllers/admin-controller.js');
 
 const { adminRegister, adminLogIn, getAdminDetail} = require('../controllers/admin-controller.js');
@@ -26,7 +26,7 @@ const { subjectCreate, classSubjects, deleteSubjectsByClass, getSubjectDetail, d
 const { teacherRegister, teacherLogIn, getTeachers, getTeacherDetail, deleteTeachers, deleteTeachersByClass, deleteTeacher, updateTeacherSubject, teacherAttendance } = require('../controllers/teacher-controller.js');
 const { sendNotification, getNotifications } = require('../controllers/notificationController.js'); // Adjusted to match your controller filename
 
-// Admin
+
 
 router.post('/AdminReg', adminRegister);
 router.post('/AdminLogin', adminLogIn);
@@ -121,5 +121,10 @@ router.delete("/SubjectsClass/:id", deleteSubjectsByClass)
 // Notification routes
 router.post('/sendNotification', sendNotification);
 router.get('/notifications/:recipientType/:recipientId', getNotifications);
+
+
+//payment routes
+router.post('/payments/:schoolId', paymentController.createPayment);
+router.post('/payments/verify/:schoolId', paymentController.verifyPayment);
 
 module.exports = router;
