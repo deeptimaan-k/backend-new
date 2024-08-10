@@ -25,7 +25,7 @@ const {
 const { subjectCreate, classSubjects, deleteSubjectsByClass, getSubjectDetail, deleteSubject, freeSubjectList, allSubjects, deleteSubjects } = require('../controllers/subject-controller.js');
 const { teacherRegister, teacherLogIn, getTeachers, getTeacherDetail, deleteTeachers, deleteTeachersByClass, deleteTeacher, updateTeacherSubject, teacherAttendance } = require('../controllers/teacher-controller.js');
 const { sendNotification, getNotifications } = require('../controllers/notificationController.js'); // Adjusted to match your controller filename
-
+const { getStudentTodaysActivity } = require('../controllers/todaysActivity.js');
 
 
 router.post('/AdminReg', adminRegister);
@@ -126,5 +126,9 @@ router.get('/notifications/:recipientType/:recipientId', getNotifications);
 //payment routes
 router.post('/payments/:schoolId', paymentController.createPayment);
 router.post('/payments/verify/:schoolId', paymentController.verifyPayment);
+
+
+//todays Activity Route
+router.get('/student/:studentId/todayActivity', getStudentTodaysActivity);
 
 module.exports = router;
