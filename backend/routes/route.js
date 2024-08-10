@@ -24,7 +24,7 @@ const {
     removeStudentAttendance } = require('../controllers/student_controller.js');
 const { subjectCreate, classSubjects, deleteSubjectsByClass, getSubjectDetail, deleteSubject, freeSubjectList, allSubjects, deleteSubjects } = require('../controllers/subject-controller.js');
 const { teacherRegister, teacherLogIn, getTeachers, getTeacherDetail, deleteTeachers, deleteTeachersByClass, deleteTeacher, updateTeacherSubject, teacherAttendance } = require('../controllers/teacher-controller.js');
-const { sendNotification, getNotifications } = require('../controllers/notification-controller.js'); // Adjusted to match your controller filename
+const { sendNotification, getNotifications } = require('../controllers/notificationController.js'); // Adjusted to match your controller filename
 
 // Admin
 
@@ -95,7 +95,6 @@ router.post('/ComplainCreate', complainCreate);
 router.get('/ComplainList/:id', complainList);
 
 // Sclass
-
 router.post('/SclassCreate', sclassCreate);
 
 router.get('/SclassList/:id', sclassList);
@@ -109,7 +108,6 @@ router.delete("/Sclass/:id", deleteSclass)
 // Subject
 
 router.post('/SubjectCreate', subjectCreate);
-
 router.get('/AllSubjects/:id', allSubjects);
 router.get('/ClassSubjects/:id', classSubjects);
 router.get('/FreeSubjectList/:id', freeSubjectList);
