@@ -26,25 +26,20 @@ exports.getStudentTodaysActivity = async (req, res) => {
         // Get today's date
         const today = formatDate(new Date());
 
-        // Fetch teacher schedules for today's date
+        // Fetch teachers' subjects for today's date
         const teachers = await Teacher.find({
             school: student.school._id,
             teachSclass: student.sclassName._id
-        }).populate({
-            path: 'tempSchedule',
-            match: { date: today }
-        });
+        }).populate('teachSubject'); // Populate subject data
 
         // Format timetable
-        const timetable = teachers.flatMap(teacher =>
-            teacher.tempSchedule.map(schedule => ({
-                subName: schedule.subject,
-                topic: schedule.topic,
-                timing: schedule.timing,
-                duration: schedule.duration,
-                teacher: teacher.name
-            }))
-        );
+        const timetable = teachers.map(teacher => ({
+            subName: teacher.teachSubject.subName,
+            topic: teacher.teachSubject.topic, // Adjust if the field is different
+            timing: teacher.teachSubject.timing, // Adjust if the field is different
+            duration: teacher.teachSubject.duration, // Adjust if the field is different
+            teacher: teacher.name
+        }));
 
         // Determine attendance status for today
         const attendanceRecord = student.attendance.find(record => formatDate(record.date) === today);
