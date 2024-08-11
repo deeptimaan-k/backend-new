@@ -24,7 +24,7 @@ const paymentSchema = new mongoose.Schema({
     },
     paymentId: {
         type: String,
-        required: true,
+        required: false, // Change this to false
         unique: true
     },
     orderId: {
