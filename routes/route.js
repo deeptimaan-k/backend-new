@@ -82,7 +82,24 @@ const {
 const {
   submitTest
 }= require("../controllers/result-controller.js")
+
+const {
+  sendNotification,
+  getNotifications,
+  markAsRead
+}= require("../controllers/notification-controller.js")
+
+const {
+  applyLeave,
+  getLeaves,
+  updateLeaveStatus,
+} = require("../controllers/leave-controller.js")
+
 // Admin
+
+router.get("/",(req,res)=>{
+  res.send("working");
+})
 
 router.post("/AdminReg", upload.single("avatar"), adminRegister);
 router.post("/AdminLogin", adminLogIn);
@@ -207,5 +224,16 @@ router.post('/assignment/submit', submitTest);
 //notes upload
 router.post('/uploadNotes', uploadNotes);
 
+//notification
+router.post('/sendNotification', sendNotification);
+router.get('/getNotification/:id', getNotifications);
+router.put('/markAsRead/:id', markAsRead);
+
+
+//attendance
+
+router.post('/applyLeave', applyLeave);
+router.get('/getLeaves/:studentId', getLeaves);
+router.put('/updateLeaveStatus/:id', updateLeaveStatus);
 
 module.exports = router;
