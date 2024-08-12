@@ -151,6 +151,30 @@ const achievementSchema = new mongoose.Schema({
   },
 });
 
+// Academic Performance Schema
+const academicPerformaceSchema = new mongoose.Schema({
+  exam: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Exam",
+  },
+  totalMarks: {
+    type: Number,
+    required: true,
+  },
+  marksObtained: {
+    type: Number,
+    required: true,
+  },
+  percentage: {
+    type: Number,
+    required: true,
+  },
+  grade: {
+    type: String,
+    required: true,
+  },
+});
+
 // Student Schema
 const studentSchema = new mongoose.Schema(
   {
@@ -197,6 +221,7 @@ const studentSchema = new mongoose.Schema(
     attendance: [attendanceSchema],
     achievements: [achievementSchema],
     parentDetails: parentDetailsSchema, // Adding parent details directly in the student schema
+    academicPerformance: [academicPerformaceSchema],
   },
   { timestamps: true }
 );
