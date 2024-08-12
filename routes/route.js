@@ -39,6 +39,7 @@ const {
   markAttendance,
   getStudentAttendance,
   markAttendanceWithAccessKey,
+  getStudentAchievement,
 } = require("../controllers/student_controller.js");
 const {
   subjectCreate,
@@ -138,6 +139,8 @@ router.put("/markStudentAttendance", markAttendance);
 router.put("/markAttendanceWithKey", markAttendanceWithAccessKey);
 
 router.get("/getStudentAttendance", getStudentAttendance);
+
+router.get("/getStudentAchievement/:studentId", getStudentAchievement);
 
 // Teacher
 

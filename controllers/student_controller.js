@@ -1,4 +1,4 @@
-const bcrypt = require("bcrypt");
+// const bcrypt = require("bcrypt");
 const Student = require("../models/studentSchema.js");
 const Subject = require("../models/subjectSchema.js");
 const Admin = require("../models/adminSchema.js");
@@ -805,6 +805,22 @@ const updateCompletionStatus = async (req, res) => {
   }
 };
 
+const getStudentAchievement = async(req,res)=>{
+  try {
+    const studentId = req.params.id;
+
+    const student = await Student.findById(studentId);
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    res.status(200).json({ message: "Achievements fetched successfully", achievements: student.achievements });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   studentRegister,
 
@@ -821,6 +837,8 @@ module.exports = {
   markAttendanceWithAccessKey,
 
   updateCompletionStatus,
+
+  getStudentAchievement,
   // studentLogIn,
   // getStudents,
   // getStudentDetail,
