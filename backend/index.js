@@ -5,7 +5,7 @@ const dotenv = require("dotenv");
 // const bodyParser = require("body-parser");
 const app = express();
 const Routes = require("./routes/route.js");
-
+const dashboard = require("./routes/dashboradRoutes.js")
 const PORT = process.env.PORT || 5002;
 
 dotenv.config();
@@ -26,6 +26,7 @@ mongoose
     .catch((err) => console.log("NOT CONNECTED TO NETWORK", err));
 
 app.use('/', Routes);
+app.use('/dashboard',dashboard);
 
 
 app.listen(PORT, () => {
