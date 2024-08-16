@@ -6,7 +6,7 @@ const dashboardController = require('../controllers/dashboard-controller');
 const router = express.Router();
 
 // Dashboard Overview
-router.get('/dashboard/overview', dashboardController.getDashboardOverview);
+router.get('/overview', dashboardController.getDashboardOverview);
 
 // Events
 router.get('/events', dashboardController.getAllEvents);
@@ -52,15 +52,15 @@ router.post('/substitutions', dashboardController.addSubstitution);
 router.get('/substitutions', dashboardController.getSubstitutionsByDate);
 
 // Complaints
-router.get('/complaints', dashboardController.getAllComplaints);
-router.post('/complaints', dashboardController.createComplaint);
-router.put('/complaints/:id', dashboardController.updateComplaint);
-router.delete('/complaints/:id', dashboardController.deleteComplaint);
+// router.get('/complaints', dashboardController.getAllComplaints);
+// router.post('/complaints', dashboardController.createComplaint);
+// router.put('/complaints/:id', dashboardController.updateComplaint);
+// router.delete('/complaints/:id', dashboardController.deleteComplaint);
 
 // Notices
-router.get('/notices', dashboardController.getAllNotices);
-router.post('/notices', dashboardController.createNotice);
-router.put('/notices/:id', dashboardController.updateNotice);
-router.delete('/notices/:id', dashboardController.deleteNotice);
+// router.get('/notices', dashboardController.getAllNotices);
+// router.post('/notices', dashboardController.createNotice);
+// router.put('/notices/:id', dashboardController.updateNotice);
+// router.delete('/notices/:id', dashboardController.deleteNotice);
 
 module.exports = router;

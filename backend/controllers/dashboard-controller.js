@@ -6,8 +6,8 @@ const Student = require('../models/studentSchema');
 const Teacher = require('../models/teacherSchema');
 const Notification = require('../models/notificationSchema');
 const Substitution = require('../models/substitutionSchema');
-const Complaint = require('../models/complaintSchema'); // Assuming this schema exists
-const Notice = require('../models/noticeSchema'); // Assuming this schema exists
+// const Complaint = require('../models/complaintSchema'); // Assuming this schema exists
+// const Notice = require('../models/noticeSchema'); // Assuming this schema exists
 
 // Dashboard Overview
 exports.getDashboardOverview = async (req, res) => {
@@ -314,78 +314,78 @@ exports.getSubstitutionsByDate = async (req, res) => {
     }
 };
 
-// Complaint Controllers
-exports.getAllComplaints = async (req, res) => {
-    try {
-        const complaints = await Complaint.find();
-        res.status(200).json(complaints);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};
+// // Complaint Controllers
+// exports.getAllComplaints = async (req, res) => {
+//     try {
+//         const complaints = await Complaint.find();
+//         res.status(200).json(complaints);
+//     } catch (err) {
+//         res.status(500).json({ error: err.message });
+//     }
+// };
 
-exports.createComplaint = async (req, res) => {
-    try {
-        const complaint = new Complaint(req.body);
-        await complaint.save();
-        res.status(201).json(complaint);
-    } catch (err) {
-        res.status(400).json({ error: err.message });
-    }
-};
+// exports.createComplaint = async (req, res) => {
+//     try {
+//         const complaint = new Complaint(req.body);
+//         await complaint.save();
+//         res.status(201).json(complaint);
+//     } catch (err) {
+//         res.status(400).json({ error: err.message });
+//     }
+// };
 
-exports.updateComplaint = async (req, res) => {
-    try {
-        const complaint = await Complaint.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        res.status(200).json(complaint);
-    } catch (err) {
-        res.status(400).json({ error: err.message });
-    }
-};
+// exports.updateComplaint = async (req, res) => {
+//     try {
+//         const complaint = await Complaint.findByIdAndUpdate(req.params.id, req.body, { new: true });
+//         res.status(200).json(complaint);
+//     } catch (err) {
+//         res.status(400).json({ error: err.message });
+//     }
+// };
 
-exports.deleteComplaint = async (req, res) => {
-    try {
-        await Complaint.findByIdAndDelete(req.params.id);
-        res.status(204).json({ message: 'Complaint deleted successfully' });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};
+// exports.deleteComplaint = async (req, res) => {
+//     try {
+//         await Complaint.findByIdAndDelete(req.params.id);
+//         res.status(204).json({ message: 'Complaint deleted successfully' });
+//     } catch (err) {
+//         res.status(500).json({ error: err.message });
+//     }
+// };
 
 // Notice Controllers
-exports.getAllNotices = async (req, res) => {
-    try {
-        const notices = await Notice.find();
-        res.status(200).json(notices);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};
+// exports.getAllNotices = async (req, res) => {
+//     try {
+//         const notices = await Notice.find();
+//         res.status(200).json(notices);
+//     } catch (err) {
+//         res.status(500).json({ error: err.message });
+//     }
+// };
 
-exports.createNotice = async (req, res) => {
-    try {
-        const notice = new Notice(req.body);
-        await notice.save();
-        res.status(201).json(notice);
-    } catch (err) {
-        res.status(400).json({ error: err.message });
-    }
-};
+// exports.createNotice = async (req, res) => {
+//     try {
+//         const notice = new Notice(req.body);
+//         await notice.save();
+//         res.status(201).json(notice);
+//     } catch (err) {
+//         res.status(400).json({ error: err.message });
+//     }
+// };
 
-exports.updateNotice = async (req, res) => {
-    try {
-        const notice = await Notice.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        res.status(200).json(notice);
-    } catch (err) {
-        res.status(400).json({ error: err.message });
-    }
-};
+// exports.updateNotice = async (req, res) => {
+//     try {
+//         const notice = await Notice.findByIdAndUpdate(req.params.id, req.body, { new: true });
+//         res.status(200).json(notice);
+//     } catch (err) {
+//         res.status(400).json({ error: err.message });
+//     }
+// };
 
-exports.deleteNotice = async (req, res) => {
-    try {
-        await Notice.findByIdAndDelete(req.params.id);
-        res.status(204).json({ message: 'Notice deleted successfully' });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};
+// exports.deleteNotice = async (req, res) => {
+//     try {
+//         await Notice.findByIdAndDelete(req.params.id);
+//         res.status(204).json({ message: 'Notice deleted successfully' });
+//     } catch (err) {
+//         res.status(500).json({ error: err.message });
+//     }
+// };
