@@ -35,12 +35,14 @@ router.put('/teachers/:id', dashboardController.updateTeacher);
 router.delete('/teachers/:id', dashboardController.deleteTeacher);
 
 // Student Attendance
-router.get('/students/:studentId/attendance', dashboardController.getStudentAttendance);
-router.post('/students/:studentId/attendance', dashboardController.markStudentAttendance);
+router.get('/TotalStudentsPresentToday', dashboardController.getTotalStudentsPresentToday);
+router.get('/TotalStudentsAbsentToday', dashboardController.getTotalStudentsAbsentToday);
+
 
 // Teacher Attendance
-router.get('/teachers/:teacherId/attendance', dashboardController.getTeacherAttendance);
-router.post('/teachers/:teacherId/attendance', dashboardController.markTeacherAttendance);
+router.get('/TotalTeachersPresentToday', dashboardController.getTotalTeachersPresentToday);
+router.get('/TotalTeachersAbsentToday', dashboardController.getTotalTeachersAbesntToday);
+
 
 // Notifications
 router.get('/notifications', dashboardController.getNotifications);

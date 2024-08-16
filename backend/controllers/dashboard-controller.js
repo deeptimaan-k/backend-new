@@ -203,51 +203,82 @@ exports.deleteTeacher = async (req, res) => {
     }
 };
 
-// Student Attendance
-exports.getStudentAttendance = async (req, res) => {
+// total present students
+exports.getTotalStudentsPresentToday = async (req, res) => {
     try {
-        const student = await Student.findById(req.params.studentId).populate('attendance.subName');
-        if (!student) return res.status(404).json({ message: 'Student not found' });
-        res.status(200).json(student.attendance);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        const today = new Date();
+        const startOfDay = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())); // Set time to start of the day in UTC
+        console.log(startOfDay)
+        const presentStudentsCount = await Student.countDocuments({
+            attendance: {
+                $elemMatch: {
+                    date: startOfDay,
+                    status: "Present"
+                }
+            }
+        });
+
+        res.status(200).json({ totalPresentStudents: presentStudentsCount });
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching present students count", error });
     }
 };
 
-exports.markStudentAttendance = async (req, res) => {
+//total absent students
+exports.getTotalStudentsAbsentToday = async (req, res) => {
     try {
-        const student = await Student.findById(req.params.studentId);
-        if (!student) return res.status(404).json({ message: 'Student not found' });
+        const today = new Date();
+        const startOfDay = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())); // Set time to start of the day in UTC
+        console.log(startOfDay)
+        const presentStudentsCount = await Student.countDocuments({
+            attendance: {
+                $elemMatch: {
+                    date: startOfDay,
+                    status: "Absent"
+                }
+            }
+        });
 
-        student.attendance.push(req.body);
-        await student.save();
-        res.status(201).json(student.attendance);
-    } catch (err) {
-        res.status(400).json({ error: err.message });
+        res.status(200).json({ totalPresentStudents: presentStudentsCount });
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching present students count", error });
     }
 };
 
-// Teacher Attendance
-exports.getTeacherAttendance = async (req, res) => {
+//total number of teacher present
+exports.getTotalTeachersPresentToday = async (req, res) => {
     try {
-        const teacher = await Teacher.findById(req.params.teacherId);
-        if (!teacher) return res.status(404).json({ message: 'Teacher not found' });
-        res.status(200).json(teacher.attendance);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+        const today = new Date();
+        const startOfDay = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+        const presentTeachersCount = await Teacher.countDocuments({
+            attendance: {
+                $elemMatch: {
+                    date: startOfDay,
+                    presentCount: { $gt: 0 }  // Checking if presentCount is greater than 0
+                }
+            }
+        });
+
+        res.status(200).json({ totalPresentTeachers: presentTeachersCount });
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching present teachers count", error });
     }
 };
 
-exports.markTeacherAttendance = async (req, res) => {
-    try {
-        const teacher = await Teacher.findById(req.params.teacherId);
-        if (!teacher) return res.status(404).json({ message: 'Teacher not found' });
 
-        teacher.attendance.push(req.body);
-        await teacher.save();
-        res.status(201).json(teacher.attendance);
-    } catch (err) {
-        res.status(400).json({ error: err.message });
+//total number of teacher Absent
+exports.getTotalTeachersAbesntToday = async (req, res) => {
+    try {
+        const { date } = req.query; // Expecting date in YYYY-MM-DD format or similar
+
+        const absentTeachers = await Teacher.find({
+            "attendance.date": new Date(date),
+            "attendance.absentCount": { $gt: 0 }
+        });
+
+        res.status(200).json(absentTeachers);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching absent teachers", error });
     }
 };
 
