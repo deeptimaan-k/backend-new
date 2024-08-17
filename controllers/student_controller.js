@@ -8,7 +8,6 @@ const { ApiResponse } = require("../utils/ApiResponse.js");
 const Teacher = require("../models/teacherSchema.js");
 const markAttendanceService = require("../service/markAttendanceService.js");
 const AccessKey = require("../models/accessKeySchema.js");
-
 const studentRegister = async (req, res, next) => {
   try {
     const {
@@ -29,23 +28,22 @@ const studentRegister = async (req, res, next) => {
       achievements,
     } = req.body;
 
-    const schoolId = req.params.id;
-    console.log(schoolId);
+    const schoolId =req.params.id; // Ensure schoolId is ObjectId
+    console.log("Request Body:", req.body); // Log request body to debug
 
-    // Find the class based on className and section
+    // Find the class based on sclassName and section
     const sclass = await Sclass.findOne({
       sclassName: sclassName,
       section: section,
       school: schoolId,
     });
+
     if (!sclass) {
-      // return res.status(404).json({ message: "Class not found" });
       throw new ApiError(404, "Class not found");
     }
-    //find if student is already present or not
-    const existedstudent = await Student.findOne({
-      adharNo: adharNo,
-    });
+
+    // Check if the student already exists
+    const existedstudent = await Student.findOne({ adharNo: adharNo });
     if (!existedstudent) {
       // Create the student object
       const student = new Student({
@@ -77,39 +75,18 @@ const studentRegister = async (req, res, next) => {
         .populate("school")
         .exec();
 
-      // Respond with the created student details
-      // res.status(201).json({
-      //   message: "Student registered successfully",
-      //   student: populatedStudent,
-      // });
-      res
-        .status(201)
-        .json(
-          new ApiResponse(
-            201,
-            populatedStudent,
-            "Student registered successfully"
-          )
-        );
+      res.status(201).json(new ApiResponse(201, populatedStudent, "Student registered successfully"));
     } else {
-      console.log("student already registered");
-      // res
-      //   .status(400)
-      //   .json(new ApiResponse(400, null, "student already registered"));
-      throw new ApiError(400, "student already registered");
+      throw new ApiError(400, "Student already registered");
     }
   } catch (err) {
+    console.error("Error in student registration:", err); // Log error details
     return res
       .status(err.statusCode || 500)
-      .json(
-        new ApiResponse(
-          err.statusCode || 500,
-          null,
-          err.message || "Server error"
-        )
-      );
+      .json(new ApiResponse(err.statusCode || 500, null, err.message || "Server error"));
   }
 };
+
 
 const getStudentById = async (req, res, next) => {
   try {

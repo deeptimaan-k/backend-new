@@ -88,6 +88,7 @@ const parentDetailsSchema = new mongoose.Schema({
   },
 });
 
+
 // Extra Activity Schema
 const extraActivitySchema = new mongoose.Schema({
   field: {
