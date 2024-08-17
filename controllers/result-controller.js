@@ -4,8 +4,6 @@ const TestResult = require("../models/resultSchema");
 const submitTest = async (req, res) => {
     const { assignmentId, userId, results } = req.body;
 
-    // console.log('Received request body:', req.body);
-
     if (!assignmentId || !userId || !Array.isArray(results)) {
         return res.status(400).json({ message: 'Invalid input data' });
     }
@@ -17,14 +15,16 @@ const submitTest = async (req, res) => {
         }
 
         const questions = results.map(result => {
-            const question = assignment.questions.find(q => q._id.toString() === result.questionId.toString());
+            const question = assignment.questions.find(q => q.question === result.question);
             if (!question) {
-                console.log('Question not found:', result.questionId);
+                console.log('Question not found:', result.question);
                 return null;
             }
             return {
-                questionId: result.questionId,
-                correct: question.correctAnswer === result.userAnswer,
+                question: result.question,
+                userAnswer: result.userAnswer,
+                correctAnswer: question.correct,
+                correct: question.correct === result.userAnswer,
                 attempted: result.userAnswer !== null && result.userAnswer !== undefined
             };
         }).filter(Boolean);
