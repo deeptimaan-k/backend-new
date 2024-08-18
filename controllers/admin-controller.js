@@ -39,55 +39,40 @@ const generateAccessAndRefreshTokens = async (userId) => {
 
 const adminRegister = async (req, res, next) => {
   try {
-    const avatar = req.file
-      ? {
-          url: `/images/${req.file.filename}`,
-          localPath: req.file.path,
-        }
-      : undefined;
-    const admin = new Admin({
-      ...req.body,
-      avatar,
-    });
+    const { schoolName, email, password, board, schoolCode, state, city, phoneNo } = req.body;
 
-    const existingAdminByEmail = await Admin.findOne({ email: req.body.email });
-    const existingSchool = await Admin.findOne({
-      schoolName: req.body.schoolCode,
-    });
-
-    if (existingAdminByEmail) {
-      throw new ApiError(400, "Email already exists");
-    } else if (existingSchool) {
-      throw new ApiError(400, "School code already exists");
-    } else {
-      await admin.save();
-      const createdAdmin = await Admin.findById(admin._id).select("-password");
-      if (!createdAdmin) {
-        throw new ApiError(
-          500,
-          "Something went wrong while registering the admin"
-        );
-      }
-      return res
-        .status(201)
-        .json(
-          new ApiResponse(
-            201,
-            { admin: createdAdmin },
-            "Admin registered successfully"
-          )
-        );
+    // Validate required fields
+    if (!schoolName || !email || !password || !board || !schoolCode || !state || !city || !phoneNo) {
+      return res.status(400).json({ message: 'All fields are required' });
     }
-  } catch (err) {
-    return res
-      .status(err.statusCode || 500)
-      .json(
-        new ApiResponse(
-          err.statusCode || 500,
-          null,
-          err.message || "Internal Server Error"
-        )
-      );
+
+    // Check if the email or schoolCode already exists
+    const existingUser = await Admin.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Email already in use' });
+    }
+
+    // Create a new Admin instance
+    const newAdmin = new Admin({
+      schoolName,
+      email,
+      password, // Hash the password
+      board,
+      schoolCode,
+      state,
+      city,
+      phoneNo,
+    });
+
+    // Save the new Admin to the database
+    await newAdmin.save();
+
+    // Respond with success message
+    res.status(201).json({ message: 'Admin registered successfully' });
+
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
 
@@ -106,56 +91,45 @@ const adminLogIn = async (req, res, next) => {
       throw new ApiError(404, "User not found");
     }
 
-    const isPasswordValid = await user.isPasswordCorrect(password);
+    // console.log(`Attempting to log in with email: ${email}`);
+    // console.log(`Plaintext password: ${password}`);
+    // console.log(`Hashed password in DB: ${user.password}`);
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    console.log(`Password match result: ${isPasswordValid}`);
 
     if (!isPasswordValid) {
       throw new ApiError(401, "Invalid password");
     }
 
-    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
-      user._id
-    );
-    const loggedUser = await Admin.findById(user._id).select(
-      "-password -refreshToken"
-    );
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
+    const loggedUser = await Admin.findById(user._id).select("-password -refreshToken");
 
-    // TODO: Add more options to make cookie more secure and reliable
     const options = {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
     };
 
-    const avatarUrl = loggedUser.avatar
-      ? loggedUser.avatar.url
-      : "https://via.placeholder.com/200x200.png";
-    const userDetails = {
-      ...loggedUser.toJSON(),
-      avatar: avatarUrl,
-    };
+    const avatarUrl = loggedUser.avatar ? loggedUser.avatar.url : "https://via.placeholder.com/200x200.png";
+    const userDetails = { ...loggedUser.toJSON(), avatar: avatarUrl };
 
     return res
       .status(200)
-      .cookie("accessToken", accessToken, options) // set the access token in the cookie
+      .cookie("accessToken", accessToken, options)
       .cookie("refreshToken", refreshToken, options)
-      .json(
-        new ApiResponse(
-          200,
-          { user: userDetails, accessToken, refreshToken }, // send access and refresh token in response if client decides to save them by themselves
-          "User logged in successfully"
-        )
-      );
+      .json(new ApiResponse(200, { user: userDetails, accessToken, refreshToken }, "User logged in successfully"));
+
   } catch (err) {
+    console.error('Login error:', err);
     return res
       .status(err.statusCode || 500)
-      .json(
-        new ApiResponse(
-          err.statusCode || 500,
-          null,
-          err.message || "Internal Server Error"
-        )
-      );
+      .json(new ApiResponse(err.statusCode || 500, null, err.message || "Internal Server Error"));
   }
 };
+
+
 
 // Get admin details
 const getAdminDetail = async (req, res, next) => {
@@ -447,97 +421,8 @@ module.exports = {
   adminRegister,
   adminLogIn,
   getAdminDetail,
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
   updateAdmin,
   createExam,
-
   findAvailableTeachers,
   createAccessKeyAndAssignSchedule,
 };

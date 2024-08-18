@@ -97,10 +97,16 @@ const {
   updateLeaveStatus,
 } = require("../controllers/leave-controller.js")
 
+const{
+  addAssignmentByTeacher,
+  pendingAssignment,
+}= require("../controllers/assignment-controller.js")
+
+
 // Admin
 
 router.get("/",(req,res)=>{
-  res.send("working");
+  res.send("working date 17 aug");
 })
 
 router.post("/AdminReg", upload.single("avatar"), adminRegister);
@@ -241,5 +247,11 @@ router.put('/markAsRead/:id', markAsRead);
 router.post('/applyLeave', applyLeave);
 router.get('/getLeaves/:studentId', getLeaves);
 router.put('/updateLeaveStatus/:id', updateLeaveStatus);
+
+
+//assignment by teacher
+router.post('/addAssignmentByTeacher', addAssignmentByTeacher);
+router.get('/pendingAssignment/:classId', pendingAssignment);
+
 
 module.exports = router;

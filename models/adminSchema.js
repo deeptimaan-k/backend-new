@@ -53,19 +53,18 @@ const jwt = require("jsonwebtoken");
 
 const adminSchema = new mongoose.Schema(
   {
-    avatar: {
-      type: {
-        url: String,
-        localPath: String,
-      },
-      default: {
-        url: {
-          type: String,
-          default: "https://via.placeholder.com/200x200.png",
-        },
-        localPath: { type: String, default: "" },
-      },
-    },
+    // avatar: {
+    //   type: {
+    //     url: String,
+    //     localPath: String,
+    //   },
+    //   default: {
+    //     url: {
+    //       type: String,
+    //       default: "https://th.bing.com/th/id/OIP.6aC0OplfDDYxuoEGXj3k_gHaHa?rs=1&pid=ImgDetMain",
+    //     },
+    //   },
+    // },
     schoolName: {
       type: String,
       required: true,
@@ -124,8 +123,12 @@ adminSchema.pre("save", async function (next) {
 });
 
 adminSchema.methods.isPasswordCorrect = async function (password) {
-  return await bcrypt.compare(password, this.password);
+  const isMatch = await bcrypt.compare(password, this.password);
+  console.log(`Comparing password: ${password} with hashed password: ${this.password}`);
+  console.log(`Password match: ${isMatch}`);
+  return isMatch;
 };
+
 
 adminSchema.methods.generateAccessToken = function () {
   return jwt.sign(

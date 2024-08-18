@@ -37,6 +37,8 @@ const submitTest = async (req, res) => {
 
         await newTestResult.save();
 
+        assignment.attempted = true;
+
         res.status(200).json({
             message: 'Test results saved successfully',
             questions
