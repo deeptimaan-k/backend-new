@@ -39,6 +39,8 @@ const {
   markAttendance,
   getStudentAttendance,
   markAttendanceWithAccessKey,
+  getStudentAchievement,
+  academicPerformance
 } = require("../controllers/student_controller.js");
 const {
   subjectCreate,
@@ -85,6 +87,7 @@ const {
 
 
 
+
 //dashboard
 const {
   getDashboardStats,
@@ -127,6 +130,26 @@ router.delete("/finances/:id", verifyJWT, verifyAdminRole, deleteFinanceRecord);
 
 
 // Admin
+=======
+
+const {
+  sendNotification,
+  getNotifications,
+  markAsRead
+}= require("../controllers/notification-controller.js")
+
+const {
+  applyLeave,
+  getLeaves,
+  updateLeaveStatus,
+} = require("../controllers/leave-controller.js")
+
+// Admin
+
+router.get("/",(req,res)=>{
+  res.send("working");
+})
+
 router.post("/AdminReg", upload.single("avatar"), adminRegister);
 router.post("/AdminLogin", adminLogIn);
 
@@ -164,6 +187,10 @@ router.put("/markStudentAttendance", markAttendance);
 router.put("/markAttendanceWithKey", markAttendanceWithAccessKey);
 
 router.get("/getStudentAttendance", getStudentAttendance);
+
+router.get("/getStudentAchievement/:studentId", getStudentAchievement);
+
+router.get("/academicPerformance/:studentId", academicPerformance);
 
 // Teacher
 
@@ -250,5 +277,16 @@ router.post('/assignment/submit', submitTest);
 //notes upload
 router.post('/uploadNotes', uploadNotes);
 
+//notification
+router.post('/sendNotification', sendNotification);
+router.get('/getNotification/:id', getNotifications);
+router.put('/markAsRead/:id', markAsRead);
+
+
+//attendance
+
+router.post('/applyLeave', applyLeave);
+router.get('/getLeaves/:studentId', getLeaves);
+router.put('/updateLeaveStatus/:id', updateLeaveStatus);
 
 module.exports = router;
