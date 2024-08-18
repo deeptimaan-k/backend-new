@@ -66,7 +66,7 @@ const {
 const verifyJWT = require("../middleware/authenticate.middleware.js");
 
 const { upload } = require("../middleware/multer.middlewares.js");
-const verifyAdminRole = require("../middleware/verifyAdminRole.middleware.js");
+const {verifyAdminRole,verifyStudentSchool} = require("../middleware/verifyAdminRole.middleware.js");
 
 const{
   addClassSubjectChapter,
@@ -81,8 +81,53 @@ const {
 
 const {
   submitTest
-}= require("../controllers/result-controller.js")
+}= require("../controllers/result-controller.js");
 
+
+//payments
+const {
+  verifyPayment,
+  createPayment
+} = require("../controllers/paymentController.js");
+
+
+
+//s3 bucket and class with subjects 
+const {
+  getAllClasses,
+  getSubjectsByClass,
+  getChaptersBySubject,
+  addClass,
+  addSubject,
+  addChapter,
+  updateClass,
+  updateSubject,
+  updateChapter,
+  deleteClass,
+  deleteChapter,
+  addVideo,
+  getVideoUrl
+} = require("../controllers/classcontroller.js");
+
+router.post('/classes/:className/subjects/:subjectName/chapters/:chapterId/video', upload.single('video'), addVideo);
+
+router.get('/classes/:className/subjects/:subjectName/chapters/:chapterId/video', getVideoUrl);
+
+router.get('/classes', getAllClasses);
+router.get('/classes/:className/subjects', getSubjectsByClass);
+router.get('/classes/:className/subjects/:subjectName/chapters', getChaptersBySubject);
+
+router.post('/classes', addClass);
+router.post('/classes/:className/subjects', addSubject);
+router.post('/classes/:className/subjects/:subjectName/chapters', addChapter);
+
+router.put('/classes/:className', updateClass);
+router.put('/classes/:className/subjects/:subjectId', updateSubject);
+router.put('/classes/:className/subjects/:subjectName/chapters/:chapterId', updateChapter);
+
+router.delete('/classes/:className', deleteClass);
+router.delete('/classes/:className/subjects/:subjectName', deleteSubject);
+router.delete('/classes/:className/subjects/:subjectName/chapters/:chapterId', deleteChapter);
 
 
 //dashboard
@@ -124,7 +169,9 @@ router.get("/finances", verifyJWT, verifyAdminRole, getAllFinanceRecords);
 router.delete("/finances/:id", verifyJWT, verifyAdminRole, deleteFinanceRecord);
 
 
-
+//payment 
+router.post('/payments/:schoolId', createPayment);
+router.post('/payments/verify/:schoolId', verifyPayment);
 
 // Admin
 router.post("/AdminReg", upload.single("avatar"), adminRegister);
@@ -150,8 +197,7 @@ router.post("/createExam", verifyJWT, createExam);
 router.post("/StudentReg/:id", verifyJWT, studentRegister);
 
 // router.post("/StudentLogin", studentLogIn);
-
-router.get("/StudentsById/:id", getStudentById);
+router.get("/StudentsById/:id",verifyJWT, verifyStudentSchool, getStudentById);
 router.post(
   "/getAllStudentByClassAndSection/:schoolid",
   getStudentsByClassAndSection
