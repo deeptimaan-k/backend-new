@@ -85,6 +85,53 @@ const {
   submitTest
 }= require("../controllers/result-controller.js")
 
+
+
+
+//dashboard
+const {
+  getDashboardStats,
+  getStudentList,
+  updateStudent,
+  deleteStudent,
+  getAbsentTeachers,
+  addSubstitution,
+  createEvent,
+  getAllEvents,
+  deleteEvent,
+  createFinanceRecord,
+  getAllFinanceRecords,
+  deleteFinanceRecord,
+} = require("../controllers/dashboard-controller");
+
+// Dashboard routes
+router.get("/stats", verifyJWT, verifyAdminRole, getDashboardStats);
+
+// Student management
+router.get("/students", verifyJWT, verifyAdminRole, getStudentList);
+router.put("/students/:id", verifyJWT, verifyAdminRole, updateStudent);
+router.delete("/students/:id", verifyJWT, verifyAdminRole, deleteStudent);
+
+// Teacher management
+router.get("/absent-teachers", verifyJWT, verifyAdminRole, getAbsentTeachers);
+router.post("/add-substitution", verifyJWT, verifyAdminRole, addSubstitution);
+
+// Event management
+router.post("/events", verifyJWT, verifyAdminRole, createEvent);
+router.get("/events",verifyJWT, verifyAdminRole,  getAllEvents);
+router.delete("/events/:id", verifyJWT, verifyAdminRole, deleteEvent);
+
+// Finance management
+router.post("/finances", verifyJWT, verifyAdminRole, createFinanceRecord);
+router.get("/finances", verifyJWT, verifyAdminRole, getAllFinanceRecords);
+router.delete("/finances/:id", verifyJWT, verifyAdminRole, deleteFinanceRecord);
+
+
+
+
+// Admin
+=======
+
 const {
   sendNotification,
   getNotifications,
