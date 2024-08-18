@@ -1,0 +1,70 @@
+Student Registration (studentRegister):
+
+Endpoint: POST /StudentReg
+Functionality: Registers a new student by hashing their password using bcrypt and saving their details to the database (Student model). Checks if the roll number already exists for the given school and class.
+Usage: Send a POST request with name, school, sclassName, rollNum, and password in the request body.
+Student Login (studentLogIn):
+
+Endpoint: POST /StudentLogin
+Functionality: Logs in a student by comparing the provided password with the hashed password stored in the database. Returns the student details excluding sensitive information (password, examResult, attendance).
+Usage: Send a POST request with rollNum, studentName, and password in the request body.
+Get Students by School (getStudents):
+
+Endpoint: GET /Students/:id
+Functionality: Retrieves all students belonging to a specific school (id). Populates each student’s class name (sclassName) for readability.
+Usage: Send a GET request to /Students/:id where :id is the school ID.
+Get Student Detail (getStudentDetail):
+
+Endpoint: GET /Student/:id
+Functionality: Retrieves detailed information about a specific student (id). Includes school name, class name, exam results, and attendance details.
+Usage: Send a GET request to /Student/:id where :id is the student ID.
+Delete Student by ID (deleteStudent):
+
+Endpoint: DELETE /Student/:id
+Functionality: Deletes a student from the database based on their ID (id).
+Usage: Send a DELETE request to /Student/:id where :id is the student ID.
+Delete Students by School (deleteStudents):
+
+Endpoint: DELETE /Students/:id
+Functionality: Deletes all students belonging to a specific school (id).
+Usage: Send a DELETE request to /Students/:id where :id is the school ID.
+Delete Students by Class (deleteStudentsByClass):
+
+Endpoint: DELETE /StudentsClass/:id
+Functionality: Deletes all students belonging to a specific class (id).
+Usage: Send a DELETE request to /StudentsClass/:id where :id is the class ID.
+Update Student Details (updateStudent):
+
+Endpoint: PUT /Student/:id
+Functionality: Updates the details of a student identified by their ID (id). Supports updating any field, including password (which is rehashed).
+Usage: Send a PUT request to /Student/:id with updated fields in the request body.
+Update Exam Result (updateExamResult):
+
+Endpoint: PUT /UpdateExamResult/:id
+Functionality: Updates the exam result (marks obtained) for a specific subject (subName) of a student (id). Creates a new result if none exists for the subject.
+Usage: Send a PUT request to /UpdateExamResult/:id with subName and marksObtained in the request body.
+Student Attendance (studentAttendance):
+
+Endpoint: PUT /StudentAttendance/:id
+Functionality: Records attendance (status) for a student (id) in a specific subject (subName) on a given date. Checks against the maximum attendance limit.
+Usage: Send a PUT request to /StudentAttendance/:id with subName, status, and date in the request body.
+Clear All Students' Attendance by Subject (clearAllStudentsAttendanceBySubject):
+
+Endpoint: PUT /RemoveAllStudentsSubAtten/:id
+Functionality: Clears attendance records for all students enrolled in a specific subject (id).
+Usage: Send a PUT request to /RemoveAllStudentsSubAtten/:id where :id is the subject ID.
+Clear All Students' Attendance (clearAllStudentsAttendance):
+
+Endpoint: PUT /RemoveAllStudentsAtten/:id
+Functionality: Clears attendance records for all students belonging to a specific school (id).
+Usage: Send a PUT request to /RemoveAllStudentsAtten/:id where :id is the school ID.
+Remove Student's Attendance by Subject (removeStudentAttendanceBySubject):
+
+Endpoint: PUT /RemoveStudentSubAtten/:id
+Functionality: Removes attendance records for a specific student (id) in a particular subject (subId).
+Usage: Send a PUT request to /RemoveStudentSubAtten/:id with subId in the request body.
+Remove Student's Attendance (removeStudentAttendance):
+
+Endpoint: PUT /RemoveStudentAtten/:id
+Functionality: Removes all attendance records for a specific student (id).
+Usage: Send a PUT request to /RemoveStudentAtten/:id.

@@ -53,19 +53,16 @@ const jwt = require("jsonwebtoken");
 
 const adminSchema = new mongoose.Schema(
   {
-    avatar: {
-      type: {
-        url: String,
-        localPath: String,
-      },
-      default: {
-        url: {
-          type: String,
-          default: "https://via.placeholder.com/200x200.png",
-        },
-        localPath: { type: String, default: "" },
-      },
-    },
+    // avatar: {
+    //   url: {
+    //     type: String,
+    //     default: "https://via.placeholder.com/200x200.png",
+    //   },
+    //   localPath: {
+    //     type: String,
+    //     default: "",
+    //   },
+    // },
     schoolName: {
       type: String,
       required: true,
