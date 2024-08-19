@@ -11,7 +11,6 @@ const PORT = process.env.PORT || 5002;
 
 dotenv.config();
 
-console.log("MONGO_URL:", process.env.MONGO_URL); // Check if MONGO_URL is correctly read
 
 app.use(bodyParser.json({ limit: "10mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "10mb", extended: true })); // Ensure this middleware is used
