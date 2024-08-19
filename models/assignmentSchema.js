@@ -12,7 +12,10 @@ const AssignmentSchema = new Schema({
         question: String,
         options: [String],
         correct: String
-    }]
+    }],
+    deadline: Date,
+    createdAt: { type: Date, default: Date.now },
+    attempted: Boolean,
 });
 
 module.exports = mongoose.model('Assignment', AssignmentSchema);

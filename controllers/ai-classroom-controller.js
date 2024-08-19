@@ -86,7 +86,7 @@ const addAssignment = async (req, res) => {
 
         // console.log('Request Payload:', requestPayload);
 
-        const response = await axios.post('https://7e83-2409-4089-ab0c-638f-f99f-83f1-8a31-ec49.ngrok-free.app/getQues/', requestPayload);
+        const response = await axios.post('https://backend-new-app-g6c3bhamergxe9c0.eastus-01.azurewebsites.net/getQues/', requestPayload);
 
         // console.log('API Response:', response.data);
 
