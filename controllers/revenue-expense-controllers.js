@@ -4,14 +4,14 @@ const Revenue = require("../models/revenueSchema");
 // Create a new expense entry
 exports.createExpense = async (req, res) => {
   try {
-    const { description, amount, date, category, schoolId } = req.body;
+    const { description, amount, date, category, school } = req.body;
 
     const newExpense = new Expense({
       description,
       amount,
       date,
       category,
-      school: schoolId,
+      school: school,
     });
 
     await newExpense.save();
@@ -58,14 +58,14 @@ exports.getTotalExpenses = async (req, res) => {
 // Create a new revenue entry
 exports.createRevenue = async (req, res) => {
   try {
-    const { description, amount, date, source, schoolId } = req.body;
+    const { description, amount, date, source, school } = req.body;
 
     const newRevenue = new Revenue({
       description,
       amount,
       date,
       source,
-      school: schoolId,
+      school: school,
     });
 
     await newRevenue.save();

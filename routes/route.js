@@ -332,7 +332,7 @@ router.get("/expenses", getExpenses);
 router.get("/expenses/total", getTotalExpenses);
 
 // Revenue routes
-router.post("/revenues", revenueController.createRevenue);
-router.get("/revenues", revenueController.getRevenues);
-router.get("/revenues/total", revenueController.getTotalRevenue);
+router.post("/revenues", createRevenue);
+router.get("/revenues", getRevenues);
+router.get("/revenues/total", getTotalRevenue);
 module.exports = router;
