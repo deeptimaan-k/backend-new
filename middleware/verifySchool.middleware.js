@@ -1,4 +1,4 @@
-exports.verifyStudentSchool = async (req, res, next) => {
+const verifyStudentSchool = async (req, res, next) => {
     try {
       console.log("Request parameters:", req.params);
       const studentId = req.params.studentId;

@@ -298,4 +298,41 @@ router.post('/assignment/submit', submitTest);
 router.post('/uploadNotes', uploadNotes);
 
 
+
+//fees details 
+const {
+  updateFeeStatus,
+  deleteFee,
+  getOverdueFees,
+  getTotalPendingFees,
+  generateInvoiceNumber,
+  createFeeWithInvoice,
+  getFeesWithInvoices,
+  getTotalInvoices
+} = require("../controllers/studentFees-controller.js");
+// create a new fee entry
+router.get("/fees/pending", getTotalPendingFees);
+router.post("/fees",createFeeWithInvoice);
+router.get("/fees", getFeesWithInvoices);
+router.patch("/fees/:feeId", updateFeeStatus);
+router.delete("/fees/:feeId", deleteFee);
+router.get("/fees/overdue", getOverdueFees);
+router.get("/invoice/generate", generateInvoiceNumber);
+router.get("/invoices/total",getTotalInvoices);
+
+const {createExpense,
+  getExpenses,
+  getTotalExpenses,
+  createRevenue,
+  getRevenues,
+  getTotalRevenue} = require("../controllers/revenue-expense-controllers.js");
+// Expense routes
+router.post("/expenses", createExpense);
+router.get("/expenses", getExpenses);
+router.get("/expenses/total", getTotalExpenses);
+
+// Revenue routes
+router.post("/revenues", revenueController.createRevenue);
+router.get("/revenues", revenueController.getRevenues);
+router.get("/revenues/total", revenueController.getTotalRevenue);
 module.exports = router;
