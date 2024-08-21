@@ -814,6 +814,84 @@ const academicPerformance = async(req,res)=>{
   }
 }
 
+
+
+const getAllStudents = async (req, res) => {
+  try {
+    const students = await Student.find()
+      .populate('sclassName') 
+      .populate('school') 
+      .populate('examResult.subName') 
+      .populate('attendance.subName')
+      .populate('academicPerformance.exam')
+      .exec();
+
+    res.status(200).json({
+      success: true,
+      data: students,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch students',
+      error: error.message,
+    });
+  }
+};
+
+
+const filterStudents = async (req, res) => {
+  const { sclassName, section } = req.query;
+
+  try {
+    // Find the class by name
+    const sclass = await Sclass.findOne({ sclassName }).exec();
+
+    if (!sclass) {
+      return res.status(404).json({
+        success: false,
+        message: 'Class not found',
+      });
+    }
+
+    // Build the query based on the class ObjectId and section
+    let query = { sclassName: sclass._id };
+
+    if (section) {
+      // Check if the section matches the found Sclass section
+      if (sclass.section !== section) {
+        return res.status(404).json({
+          success: false,
+          message: 'No students found for the given section',
+        });
+      }
+      // If section is provided and matches, proceed with the query
+    }
+
+    const students = await Student.find(query)
+      .populate('sclassName') // Populate related Sclass model
+      .populate('school') // Populate related Admin model
+      .populate('examResult.subName') // Populate related Subject model in examResult
+      .populate('attendance.subName') // Populate related Subject model in attendance
+      .populate('academicPerformance.exam') // Populate related Exam model in academicPerformance
+      .exec();
+
+    res.status(200).json({
+      success: true,
+      data: students,
+    });
+  } catch (error) {
+    console.error('Error fetching students:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch students',
+      error: error.message,
+    });
+  }
+};
+
+
+
 module.exports = {
   studentRegister,
 
@@ -834,6 +912,9 @@ module.exports = {
   getStudentAchievement,
 
   academicPerformance,
+
+  getAllStudents,
+  filterStudents ,
   // studentLogIn,
   // getStudents,
   // getStudentDetail,
@@ -1030,3 +1111,5 @@ module.exports = {
 //     res.status(500).json(error);
 //   }
 // };
+
+

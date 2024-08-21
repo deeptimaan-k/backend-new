@@ -39,6 +39,8 @@ const {
   markAttendance,
   getStudentAttendance,
   markAttendanceWithAccessKey,
+  getAllStudents,
+  filterStudents
 } = require("../controllers/student_controller.js");
 const {
   subjectCreate,
@@ -195,7 +197,8 @@ router.post("/createExam", verifyJWT, createExam);
 // Student
 
 router.post("/StudentReg/:id", verifyJWT, studentRegister);
-
+router.get('/allstudents', getAllStudents);
+router.get('/filterstudents', filterStudents);
 // router.post("/StudentLogin", studentLogIn);
 
 router.get("/StudentsById/:id", getStudentById);
