@@ -64,6 +64,8 @@ const {
   getTeacherScheduleById,
   uploadMarks,
   getExamByTeacherId,
+  getAllTeachers,
+  filterTeachers
 } = require("../controllers/teacher-controller.js");
 const verifyJWT = require("../middleware/authenticate.middleware.js");
 
@@ -197,7 +199,7 @@ router.post("/createExam", verifyJWT, createExam);
 // Student
 
 router.post("/StudentReg/:id", verifyJWT, studentRegister);
-router.get('/allstudents', getAllStudents);
+router.get('/allstudents',  getAllStudents);
 router.get('/filterstudents', filterStudents);
 // router.post("/StudentLogin", studentLogIn);
 
@@ -208,11 +210,8 @@ router.post(
 );
 
 router.put("/addStudentAchievements/:studentId", addStudentAchievement);
-
 router.put("/markStudentAttendance", markAttendance);
-
 router.put("/markAttendanceWithKey", markAttendanceWithAccessKey);
-
 router.get("/getStudentAttendance", getStudentAttendance);
 
 // Teacher
@@ -221,7 +220,8 @@ router.post("/TeacherReg", verifyJWT, teacherRegister);
 router.post("/TeacherLoginWithEmail", teacherLogInWithEmail);
 router.post("/verifyEmailOtp", verifyEmailOtp);
 router.post("/storeTeacherBasicDetails", storeTeacherBasicDetails);
-
+router.get('/allteachers', getAllTeachers);
+router.get('/filterteacher', filterTeachers);
 // router.get("/Teachers/:id", getTeachers);
 router.get("/Teacher/:id", getTeacherDetails);
 // get teacher all class on the basis of day like Monday,tuesday like that
@@ -238,6 +238,32 @@ router.delete("/Teacher/:id", deleteTeacher);
 // router.put("/TeacherSubject", updateTeacherSubject);
 
 router.post("/TeacherAttendance/:id", teacherAttendance);
+// Employee routes 
+
+const {
+  createEmployee,
+  getAllEmployees,
+  getEmployeeById,
+  updateEmployee,
+  deleteEmployee,
+} = require('../controllers/employee-controller.js'); // Adjust the path as needed
+
+// Route to create a new employee
+router.post('/employees',createEmployee);
+
+// Route to get all employees
+router.get('/allemployees',createEmployee);
+
+// Route to get an employee by ID
+router.get('/employees/:id', getEmployeeById);
+
+// Route to update an employee by ID
+router.put('/employees/:id', updateEmployee);
+
+// Route to delete an employee by ID
+router.delete('/employees/:id', deleteEmployee);
+
+
 
 // Notice
 

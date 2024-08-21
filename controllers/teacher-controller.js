@@ -621,6 +621,79 @@ const getExamByTeacherId = async (req, res, next) => {
   }
 };
 
+
+const getAllTeachers = async (req, res, next) => {
+  try {
+    const teachers = await Teacher.find()
+      .populate('school', 'schoolName') // Populate the school field if needed
+      .populate('teachSubject', 'subName') // Populate the subject field if needed
+      .populate('teachSclass', 'sclassName'); // Populate the class field if needed
+
+    res.status(200).json({
+      success: true,
+      data: teachers,
+    });
+  } catch (error) {
+    next(error); // Pass errors to the global error handler
+  }
+};
+
+const filterTeachers = async (req, res) => {
+  const { className, section } = req.query;
+
+  try {
+    // Find the class by name
+    const sclass = await Sclass.findOne({ sclassName: className }).exec();
+
+    if (!sclass) {
+      return res.status(404).json({
+        success: false,
+        message: 'Class not found',
+      });
+    }
+
+    // Build the query based on the class ObjectId
+    let query = { teachSclass: sclass._id };
+
+    if (section) {
+      // Filter by section in the schedule if provided
+      query['schedule.section'] = section;
+    }
+
+    const teachers = await Teacher.find(query)
+      .populate('school', 'schoolName') // Populate the school field if needed
+      .populate('teachSubject', 'subName') // Populate the subject field if needed
+      .populate('teachSclass', 'sclassName') // Populate the class field if needed
+      .exec();
+
+    // Filter teachers with the provided section if it exists in schedule
+    if (section) {
+      const filteredTeachers = teachers.filter(teacher =>
+        teacher.schedule.some(sch => sch.section === section)
+      );
+
+      return res.status(200).json({
+        success: true,
+        data: filteredTeachers,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: teachers,
+    });
+  } catch (error) {
+    console.error('Error fetching teachers:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch teachers',
+      error: error.message,
+    });
+  }
+};
+
+
+
 module.exports = {
   storeTeacherBasicDetails,
   teacherRegister,
@@ -635,4 +708,6 @@ module.exports = {
   getTeacherScheduleById,
   uploadMarks,
   getExamByTeacherId,
+  getAllTeachers,
+  filterTeachers,
 };
