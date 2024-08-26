@@ -124,7 +124,10 @@ adminSchema.pre("save", async function (next) {
 });
 
 adminSchema.methods.isPasswordCorrect = async function (password) {
-  return await bcrypt.compare(password, this.password);
+  const isMatch = await bcrypt.compare(password, this.password);
+  // console.log(`Comparing password: ${password} with hashed password: ${this.password}`);
+  // console.log(`Password match: ${isMatch}`);
+  return isMatch;
 };
 
 adminSchema.methods.generateAccessToken = function () {
