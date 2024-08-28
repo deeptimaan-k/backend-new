@@ -173,7 +173,7 @@ router.delete("/finances/:id", deleteFinanceRecord);
 // Admin
 
 router.get("/",(req,res)=>{
-  res.send("working date 22 aug test");
+  res.send("working date 26 aug test");
 })
 
 router.post("/AdminReg", upload.single("avatar"), adminRegister);
