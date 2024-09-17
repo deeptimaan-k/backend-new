@@ -68,6 +68,7 @@ const {
   getTeacherScheduleById,
   uploadMarks,
   getExamByTeacherId,
+  getAllTeacherDetails
 } = require("../controllers/teacher-controller.js");
 const verifyJWT = require("../middleware/authenticate.middleware.js");
 
@@ -78,11 +79,14 @@ const{
   addClassSubjectChapter,
   addAssignment,
   getClassSubjectDetails,
-  getAssignmentsByTopic
+  getAssignmentsByTopic,
+  addLessonPlanning
 } = require("../controllers/ai-classroom-controller.js");
 
 const {
-  uploadNotes
+  uploadNotes,
+  uploadNotesFromAi,
+  displayNotes,
 } = require("../controllers/notes-controller.js");
 
 const {
@@ -173,13 +177,13 @@ router.delete("/finances/:id", deleteFinanceRecord);
 // Admin
 
 router.get("/",(req,res)=>{
-  res.send("working date 26 aug test");
+  res.send("working date 17 sep test");
 })
 
 router.post("/AdminReg", upload.single("avatar"), adminRegister);
 router.post("/AdminLogin", adminLogIn);
 
-router.get("/GetAdminById/:id", verifyJWT, getAdminDetail);
+router.get("/GetAdminById/:id", getAdminDetail);
 // router.delete("/Admin/:id", deleteAdmin)
 
 router.put("/UpdateAdmin/:id", verifyJWT, upload.single("avatar"), updateAdmin);
@@ -239,6 +243,7 @@ router.get("/examListbyTeachId/:teacherId", getExamByTeacherId);
 // router.delete("/Teachers/:id", deleteTeachers);
 // router.delete("/TeachersClass/:id", deleteTeachersByClass);
 router.delete("/Teacher/:id", deleteTeacher);
+router.get("/allTeachers",getAllTeacherDetails);
 
 // router.put("/TeacherSubject", updateTeacherSubject);
 
@@ -298,6 +303,8 @@ router.post('/assignment', addAssignment);
 router.get('/classroom/:class/:subject', getClassSubjectDetails);
 router.get('/classroom/:className/:subject/:chapter/:topic/assignments', getAssignmentsByTopic);
 
+router.post("/addlessonPlaning",addLessonPlanning);
+
 
 //assignment submit
 router.post('/assignment/submit', submitTest);
@@ -306,6 +313,8 @@ router.get('/class/:classId/analysis', getClassResultAnalysis);
 
 //notes upload
 router.post('/uploadNotes', uploadNotes);
+router.post("/uploadNotesFromAi",uploadNotesFromAi);
+router.post("/displayNotes",displayNotes);
 
 //notification
 router.post('/sendNotification', sendNotification);
