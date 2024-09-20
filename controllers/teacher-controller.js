@@ -126,8 +126,6 @@ const teacherLogInWithEmail = async (req, res, next) => {
     teacher.otp = otp;
     await teacher.save();
 
-    console.log();
-
     // Send OTP through email
     // await sendOtpThroughMail(teacher.email, otp);
     const transporter = nodemailer.createTransport({
