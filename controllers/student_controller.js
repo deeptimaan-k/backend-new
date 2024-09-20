@@ -41,7 +41,7 @@ const sendMobileOTP = async (req, res) => {
       // sending otp through mobile
       const response = fast2sms.sendMessage({
         authorization:
-          "tEPa1Hmi7kKh04LoXdNG5gw8ZUfnjRpuV2rFBsOeDb6QxJMCWAQdfCBnaPvFY1oRTgky80I67VhSezwD",
+          "tEPa1Hmi7kKh04LoXdNG5gw8ZUfnjRpuV2rFBsOeDb6QxJMCWAQdfCBnaPvFY1oRTgky80I67VhSezwD", // API_KEY
         message: `your one time password for login is: ${otp}`,
         numbers: [phone],
       });
