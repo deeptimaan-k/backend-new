@@ -3,14 +3,10 @@ const { ApiError } = require("../utils/ApiError.js");
 const { ApiResponse } = require("../utils/ApiResponse.js");
 
 const verifyJWT = async (req, res, next) => {
-  // Extract the token from the Authorization header
-  const authHeader = req.headers['authorization'];
 
-  if (!authHeader) {
-    return res.status(403).json(new ApiResponse(403, null, "Unauthorized request, JWT token is required"));
-  }
-
-  const token = authHeader.split(' ')[1]; // Bearer <token>, so we split and take the token part
+  const token =
+    req.cookies?.accessToken ||
+    req.header("Authorization")?.replace("Bearer ", "");
 
   if (!token) {
     return res.status(403).json(new ApiResponse(403, null, "Unauthorized request, JWT token is required"));
