@@ -8,46 +8,8 @@ const nodemailer = require("nodemailer");
 const { ApiError } = require("../utils/ApiError.js");
 const Student = require("../models/studentSchema.js");
 const Exam = require("../models/examSchema.js");
-// Register teacher (only admin)
-// const teacherRegister = async (req, res) => {
-//   const { name, email, role, school, teachSubject, teachSclass, phoneNo } =
-//     req.body;
-//   try {
-//     // const salt = await bcrypt.genSalt(10);
-//     // const hashedPass = await bcrypt.hash(password, salt);
 
-//     const teacher = new Teacher({
-//       name,
-//       email,
-//       // password: hashedPass,
-//       phoneNo,
-//       role,
-//       school,
-//       teachSubject,
-//       teachSclass,
-//     });
 
-//     const existingTeacherByEmail = await Teacher.findOne({ email });
-
-//     if (existingTeacherByEmail) {
-//       return res
-//         .status(400)
-//         .send(new ApiResponse(400, null, "Email already exists"));
-//       // throw new ApiError(400, "Email already exists");
-//     } else {
-//       const result = await teacher.save();
-//       await Subject.findByIdAndUpdate(teachSubject, { teacher: teacher._id });
-//       result.password = undefined;
-//       return res
-//         .status(201)
-//         .send(new ApiResponse(201, result, "Teacher registered successfully"));
-//     }
-//   } catch (err) {
-//     return res
-//       .status(500)
-//       .json(new ApiResponse(500, "Internal Server Error", [err.message]));
-//   }
-// };
 
 const teacherRegister = async (req, res, next) => {
   const { name, email, role, school, teachSubject, teachSclass, phoneNo } =

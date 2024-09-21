@@ -152,6 +152,7 @@ const achievementSchema = new mongoose.Schema({
   },
 });
 
+
 // Academic Performance Schema
 const academicPerformaceSchema = new mongoose.Schema({
   exam: {
@@ -211,7 +212,7 @@ const studentSchema = new mongoose.Schema(
     },
     school: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Admin",
+      ref: "School",
       required: true,
     },
     role: {

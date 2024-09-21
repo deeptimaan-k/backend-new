@@ -10,6 +10,7 @@ const {
   createAccessKeyAndAssignSchedule,
   findAvailableTeachers,
   createExam,
+  createSchool,
 } = require("../controllers/admin-controller.js");
 
 const {
@@ -136,7 +137,6 @@ router.delete("/finances/:id", verifyJWT, verifyAdminRole, deleteFinanceRecord);
 
 
 
-// Admin
 
 const {
   sendNotification,
@@ -165,7 +165,7 @@ router.get("/",(req,res)=>{
 router.post("/AdminReg", upload.single("avatar"), adminRegister);
 router.post("/AdminLogin", adminLogIn);
 
-router.get("/GetAdminById/:id", verifyJWT, getAdminDetail);
+router.get("/GetAdminById/:id", getAdminDetail);
 // router.delete("/Admin/:id", deleteAdmin)
 
 router.put("/UpdateAdmin/:id", verifyJWT, upload.single("avatar"), updateAdmin);
@@ -251,7 +251,7 @@ router.get("/ComplainList/:id", complainList);
 
 // Sclass
 
-router.post("/SclassCreate", verifyJWT, sclassCreate);
+router.post("/SclassCreate",  sclassCreate);
 
 router.get("/SclassList/:id", sclassList);
 router.get("/Sclass/:id", getSclassDetail);
