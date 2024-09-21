@@ -152,6 +152,7 @@ const achievementSchema = new mongoose.Schema({
   },
 });
 
+
 // Academic Performance Schema
 const academicPerformaceSchema = new mongoose.Schema({
   exam: {

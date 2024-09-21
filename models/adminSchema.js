@@ -31,6 +31,11 @@ const adminSchema = new mongoose.Schema(
     forgotPasswordExpiry: {
       type: Date,
     },
+    school: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'School',  
+  
+    }
   },
   { timestamps: true }
 );

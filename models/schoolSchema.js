@@ -35,7 +35,7 @@ const schoolSchema = new mongoose.Schema({
   employees: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Employee'
+      ref: 'Teacher'
     }
   ],
   students: [
@@ -53,15 +53,25 @@ const schoolSchema = new mongoose.Schema({
   notifications: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Notifications'
+      ref: 'Notification'
+    }
+  ],
+  notice: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Notice'
     }
   ],
   certificates: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Certificate'
+      ref: 'Achievement'
     }
   ],
+  accountDetails : {
+    type: mongoose.Schema.Types.ObjectId,
+      ref: 'AdminAccount'
+  }
 
   
 }, { timestamps: true });

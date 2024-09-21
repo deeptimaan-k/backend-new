@@ -151,7 +151,6 @@ const sclassCreate = async (req, res, next) => {
   try {
     const { sclassName, school, section } = req.body;
 
-    // Check if the class with the same name, school, and section already exists
     const existingSclass = await Sclass.findOne({
       sclassName: sclassName,
       school: school,
@@ -159,23 +158,9 @@ const sclassCreate = async (req, res, next) => {
     });
 
     if (existingSclass) {
-      // If it exists, return an error response
-      // return res
-      //   .status(400)
-      //   .json(
-      //     new ApiResponse(
-      //       400,
-      //       null,
-      //       "Class name already exists for this school and section"
-      //     )
-      //   );
-      throw new ApiError(
-        400,
-        "Class name already exists for this school and section"
-      );
+      throw new ApiError(400, "Class name already exists for this school and section");
     }
 
-    // If it does not exist, create a new class
     const newSclass = new Sclass({
       sclassName: sclassName,
       school: school,
@@ -184,27 +169,16 @@ const sclassCreate = async (req, res, next) => {
 
     const result = await newSclass.save();
 
-    // Return a success response
-    // return res
-    //   .status(201)
-    //   .json(new ApiResponse(201, result, "Class created successfully"));
-
-    return res
-      .status(201)
-      .json(new ApiResponse(201, result, "class created successfully"));
+    return res.status(201).json(new ApiResponse(201, result, "Class created successfully"));
   } catch (err) {
-    // Handle any errors that occur
-    return res
-      .status(err.statusCode || 500)
-      .json(
-        new ApiResponse(
-          err.statusCode || 500,
-          null,
-          err.message || "Internal Server Error"
-        )
-      );
+    console.error("Error in class creation:", err); // Log error details
+
+    return res.status(err.statusCode || 500).json(
+      new ApiResponse(err.statusCode || 500, null, err.message || "Internal Server Error")
+    );
   }
 };
+
 
 const sclassList = async (req, res, next) => {
   try {
