@@ -136,7 +136,6 @@ adminSchema.methods.isPasswordCorrect = async function (password) {
   return isMatch;
 };
 
-
 adminSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {

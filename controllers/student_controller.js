@@ -12,9 +12,6 @@ const AccessKey = require("../models/accessKeySchema.js");
 // .env
 require("dotenv").config();
 
-// fast2sms
-const fast2sms = require("fast-two-sms");
-
 // student login with otp
 const sendMobileOTP = async (req, res) => {
     try {
@@ -26,7 +23,7 @@ const sendMobileOTP = async (req, res) => {
       }
 
       // check if student exists
-      const student = await Student.findOne({phone});
+      const student = await Student.findOne({phoneNo : phone});
       if(!student) {
         throw new ApiError(404, "Student not found");
       }
@@ -37,14 +34,14 @@ const sendMobileOTP = async (req, res) => {
       const otp = Math.floor(1000 + Math.random() * 9000).toString();
       student.otp = otp;
       await student.save();
+      const client = require('twilio')(process.env.accountSid, process.env.authToken);
 
       // sending otp through mobile
-      const response = fast2sms.sendMessage({
-        authorization:
-          "tEPa1Hmi7kKh04LoXdNG5gw8ZUfnjRpuV2rFBsOeDb6QxJMCWAQdfCBnaPvFY1oRTgky80I67VhSezwD", // API_KEY
-        message: `your one time password for login is: ${otp}`,
-        numbers: [phone],
-      });
+      const response = client.messages.create({
+        body: `otp for login is : ${otp}`,
+        to: `${phone}`,
+        from: `${process.env.admin_phone}`
+      }).then((message) => console.log(message.body));
 
       // if otp delivered
       if(response) {
@@ -82,7 +79,7 @@ const sendMobileOTP = async (req, res) => {
 const validateOTP = async (req, res) => {
   const {phone, otp} = req.body;
     try {
-      const student = await Student.findOne({ phone });
+      const student = await Student.findOne({ phoneNo : phone });
 
       if (!student || student.otp !== otp) {
         console.log(`student otp is not correct student.otp is ${student.otp}`);
@@ -96,7 +93,7 @@ const validateOTP = async (req, res) => {
 
       return res
         .status(200)
-        .send(new ApiResponse(200, teacher, "OTP verified successfully"));
+        .send(new ApiResponse(200, student, "OTP verified successfully"));
     } catch (error) {
       console.log(error);
       return res
@@ -111,7 +108,7 @@ const validateOTP = async (req, res) => {
     }
 }
 
-
+// inserting a student in db
 const studentRegister = async (req, res, next) => {
   try {
     const {
@@ -129,7 +126,7 @@ const studentRegister = async (req, res, next) => {
       fatherPhoneNo,
       motherPhoneNo,
       occupation,
-      achievements,
+      achievements
     } = req.body;
 
     const schoolId =req.params.id; // Ensure schoolId is ObjectId

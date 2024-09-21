@@ -157,7 +157,7 @@ const sclassCreate = async (req, res, next) => {
       school: school,
       section: section,
     });
-
+    
     if (existingSclass) {
       // If it exists, return an error response
       // return res
