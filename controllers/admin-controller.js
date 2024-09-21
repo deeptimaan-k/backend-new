@@ -182,74 +182,100 @@ const getAdminDetail = async (req, res, next) => {
     const notices = await Notice.find({ school: school._id }); // Fetch notices associated with the school
     const accountDetails = await AdminAccount.findOne({ school: school._id }); // Use findOne if you expect a single document
 
-    // Safely map and format response to the desired structure
+    // Construct the response object
     const schoolResponse = {
-      name: school.name || "N/A",
-      address: school.address || "N/A",
-      contact: {
+      _id: admin._id, // Include the admin ID if needed
+      email: admin.email,
+      role: admin.role,
+      phoneNo: admin.phoneNo,
+      createdAt: admin.createdAt,
+      updatedAt: admin.updatedAt,
+      school: {
+        schoolName: school.name || "N/A",
+        address: school.address || "N/A",
+        schoolCode : school.schoolCode || "N/A",
+        board : school.board || "N/A",
         phone: school.phoneNo || "N/A",
         email: admin.email || "N/A",
-      },
-      employees: {
-        teachers: employees.filter(emp => emp.role === "Teacher").map(teacher => ({
-          id: teacher._id,
-          name: teacher.name,
-          subject: teacher.teachSubject,
-          email: teacher.email,
-          phone: teacher.phoneNo
-        })) || [],
-        staff: employees.filter(emp => emp.role !== "Teacher").map(staff => ({
-          id: staff._id,
-          name: staff.name,
-          role: staff.role,
-          email: staff.email,
-          phone: staff.phoneNo
-        })) || []
-      },
-      students: students.map(student => ({
-        id: student._id,
-        name: student.name,
-        grade: student.grade,
-        email: student.email
-      })) || [],
-      finance: {
-        totalIncome: finances.reduce((sum, fin) => fin.type === "Revenue" ? sum + fin.amount : sum, 0) || 0,
-        totalExpense: finances.reduce((sum, fin) => fin.type === "Expense" ? sum + fin.amount : sum, 0) || 0,
-        details: {
-          income: finances.filter(fin => fin.type === "Revenue").map(income => ({
-            source: income.description,
-            amount: income.amount
+      
+        employees: {
+          teachers: employees.map(teacher => ({
+            id: teacher._id,
+            name: teacher.name,
+            email: teacher.email,
+            phoneNo: teacher.phoneNo,
+            positionRole: teacher.positionrole || "N/A",
+            role: teacher.role,
+            teachSubject: teacher.teachSubject ? teacher.teachSubject.name : "N/A", // Assuming name is a field in Subject schema
+            teachSclass: teacher.teachSclass ? teacher.teachSclass.name : "N/A", // Assuming name is a field in Sclass schema
+            attendance: teacher.attendance,
+            schedule: teacher.schedule,
+            tempSchedule: teacher.tempSchedule,
           })) || [],
-          expenses: finances.filter(fin => fin.type === "Expense").map(expense => ({
-            category: expense.description,
-            amount: expense.amount
+          staff: employees.filter(emp => emp.role !== "Teacher").map(staff => ({
+            id: staff._id,
+            name: staff.name,
+            role: staff.role,
+            email: staff.email,
+            phone: staff.phoneNo,
           })) || []
-        }
+        },
+        students: students.map(student => ({
+          id: student._id,
+          name: student.name,
+          rollNum: student.rollNum,
+          gender: student.gender,
+          address: student.address,
+          phoneNo: student.phoneNo,
+          adharNo: student.adharNo,
+          extraActivity: student.extraActivity,
+          sclassName: student.sclassName,
+          role: student.role,
+          examResult: student.examResult,
+          attendance: student.attendance,
+          achievements: student.achievements,
+          parentDetails: student.parentDetails,
+          academicPerformance: student.academicPerformance,
+        })) || [],
+        finance: {
+          totalIncome: finances.reduce((sum, fin) => fin.type === "Revenue" ? sum + fin.amount : sum, 0) || 0,
+          totalExpense: finances.reduce((sum, fin) => fin.type === "Expense" ? sum + fin.amount : sum, 0) || 0,
+          details: {
+            income: finances.filter(fin => fin.type === "Revenue").map(income => ({
+              source: income.description,
+              amount: income.amount,
+            })) || [],
+            expenses: finances.filter(fin => fin.type === "Expense").map(expense => ({
+              category: expense.description,
+              amount: expense.amount,
+            })) || []
+          }
+        },
+        notifications: notifications.map(notification => ({
+          id: notification._id,
+          message: notification.message,
+          date: notification.date,
+          type: notification.type,
+        })) || [],
+        notices: notices.map(notice => ({  // Map the notices here
+          id: notice._id,
+          title: notice.title,
+          description: notice.description,
+          date: notice.createdAt, // Ensure to use createdAt for date
+        })) || [],
+        events: events.map(event => ({
+          id: event._id,
+          eventName: event.eventName || "N/A",
+          eventDate: event.eventDate || "N/A",
+          description: event.description,
+        })) || [],
+        accountDetails: accountDetails ? {
+          accountNumber: accountDetails.accountNumber || "N/A",
+          ifscCode: accountDetails.ifscCode || "N/A",
+          bankName: accountDetails.bankName || "N/A",
+          balance: accountDetails.balance || 0,
+        } : null,
       },
-      notifications: notifications.map(notification => ({
-        id: notification._id,
-        message: notification.message,
-        date: notification.date,
-        type: notification.type
-      })) || [],
-      notices: notices.map(notice => ({  // Map the notices here
-        id: notice._id,
-        title: notice.title,
-        description: notice.description,
-        date: notice.createdAt
-      })) || [],
-      events: events.map(event => ({
-        id: event._id,
-        eventName: event.eventName,
-        eventDate: event.eventDate,
-        description: event.description
-      })) || [],
-      accountDetails: accountDetails ? {
-        accountNumber: accountDetails.accountNumber || "N/A",
-        ifscCode: accountDetails.ifscCode || "N/A",
-        bankName: accountDetails.bankName || "N/A",
-        balance: accountDetails.balance || 0,
-      } : null
     };
 
     res.status(200).json(
@@ -261,6 +287,7 @@ const getAdminDetail = async (req, res, next) => {
     );
   }
 };
+
 
 
 
