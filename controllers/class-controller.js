@@ -156,7 +156,7 @@ const sclassCreate = async (req, res, next) => {
       school: school,
       section: section,
     });
-
+    
     if (existingSclass) {
       throw new ApiError(400, "Class name already exists for this school and section");
     }

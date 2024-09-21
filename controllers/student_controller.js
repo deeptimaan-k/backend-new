@@ -8,6 +8,107 @@ const { ApiResponse } = require("../utils/ApiResponse.js");
 const Teacher = require("../models/teacherSchema.js");
 const markAttendanceService = require("../service/markAttendanceService.js");
 const AccessKey = require("../models/accessKeySchema.js");
+
+// .env
+require("dotenv").config();
+
+// student login with otp
+const sendMobileOTP = async (req, res) => {
+    try {
+      console.log("Request body:" , req.body);
+
+      const {phone} = req.body;
+      if(!phone) {
+        throw new ApiError(404, "Phone is required");
+      }
+
+      // check if student exists
+      const student = await Student.findOne({phoneNo : phone});
+      if(!student) {
+        throw new ApiError(404, "Student not found");
+      }
+
+      console.log(student);
+
+      // otp generation and saving it
+      const otp = Math.floor(1000 + Math.random() * 9000).toString();
+      student.otp = otp;
+      await student.save();
+      const client = require('twilio')(process.env.accountSid, process.env.authToken);
+
+      // sending otp through mobile
+      const response = client.messages.create({
+        body: `otp for login is : ${otp}`,
+        to: `${phone}`,
+        from: `${process.env.admin_phone}`
+      }).then((message) => console.log(message.body));
+
+      // if otp delivered
+      if(response) {
+        return res
+          .status(200)
+          .json(new ApiResponse(200, null, `OTP sent to ${phone}`));
+      } else {
+        return res
+        .status(500)
+        .json(
+          new ApiResponse(
+            error.statusCode || 500,
+            null,
+            error.message || "Internal Server Error"
+          )
+        );
+      }
+   
+    } catch (error) {
+      // Handle unexpected errors
+      console.error("Error during login with phone number:", error);
+      return res
+        .status(500)
+        .json(
+          new ApiResponse(
+            error.statusCode || 500,
+            null,
+            error.message || "Internal Server Error"
+          )
+        );
+    }
+}
+
+// validate otp
+const validateOTP = async (req, res) => {
+  const {phone, otp} = req.body;
+    try {
+      const student = await Student.findOne({ phoneNo : phone });
+
+      if (!student || student.otp !== otp) {
+        console.log(`student otp is not correct student.otp is ${student.otp}`);
+        // throw new ApiError(400, "Invalid OTP");
+        return res.status(400).send(new ApiError(400, "Invalid OTP"));
+      }
+
+      student.otp = undefined;
+      await student.save();
+      student.password = undefined;
+
+      return res
+        .status(200)
+        .send(new ApiResponse(200, student, "OTP verified successfully"));
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(500)
+        .json(
+          new ApiResponse(
+            error.statusCode || 500,
+            null,
+            error.message || "Internal Server Error"
+          )
+        );
+    }
+}
+
+// inserting a student in db
 const studentRegister = async (req, res, next) => {
   try {
     const {
@@ -25,7 +126,7 @@ const studentRegister = async (req, res, next) => {
       fatherPhoneNo,
       motherPhoneNo,
       occupation,
-      achievements,
+      achievements
     } = req.body;
 
     const schoolId =req.params.id; // Ensure schoolId is ObjectId
@@ -834,6 +935,10 @@ module.exports = {
   getStudentAchievement,
 
   academicPerformance,
+
+  sendMobileOTP,
+
+  validateOTP,
   // studentLogIn,
   // getStudents,
   // getStudentDetail,

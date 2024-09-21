@@ -21,10 +21,12 @@ const {
   getSclassDetail,
   getSclassStudents,
 } = require("../controllers/class-controller.js");
+
 const {
   complainCreate,
   complainList,
 } = require("../controllers/complain-controller.js");
+
 const {
   noticeCreate,
   noticeList,
@@ -32,6 +34,7 @@ const {
   deleteNotice,
   updateNotice,
 } = require("../controllers/notice-controller.js");
+
 const {
   studentRegister,
   getStudentById,
@@ -41,8 +44,11 @@ const {
   getStudentAttendance,
   markAttendanceWithAccessKey,
   getStudentAchievement,
-  academicPerformance
+  academicPerformance,
+  sendMobileOTP,
+  validateOTP
 } = require("../controllers/student_controller.js");
+
 const {
   subjectCreate,
   classSubjects,
@@ -53,6 +59,7 @@ const {
   allSubjects,
   deleteSubjects,
 } = require("../controllers/subject-controller.js");
+
 const {
   teacherRegister,
   teacherLogInWithEmail,
@@ -173,7 +180,7 @@ router.get("/findavailableTeacher", findAvailableTeachers);
 
 router.post("/createExam", verifyJWT, createExam);
 
-// Student
+// Student 
 
 router.post("/StudentReg/:id", verifyJWT, studentRegister);
 
@@ -196,6 +203,10 @@ router.get("/getStudentAttendance", getStudentAttendance);
 router.get("/getStudentAchievement/:studentId", getStudentAchievement);
 
 router.get("/academicPerformance/:studentId", academicPerformance);
+
+router.post("/Parent/sendOTP", sendMobileOTP);
+
+router.post("/Parent/validateOTP", validateOTP);
 
 // Teacher
 

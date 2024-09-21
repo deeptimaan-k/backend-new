@@ -224,6 +224,9 @@ const studentSchema = new mongoose.Schema(
     achievements: [achievementSchema],
     parentDetails: parentDetailsSchema, // Adding parent details directly in the student schema
     academicPerformance: [academicPerformaceSchema],
+    otp : {
+      type : String,
+    }
   },
   { timestamps: true }
 );
