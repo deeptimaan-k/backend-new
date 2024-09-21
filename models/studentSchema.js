@@ -211,7 +211,7 @@ const studentSchema = new mongoose.Schema(
     },
     school: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Admin",
+      ref: "School",
       required: true,
     },
     role: {

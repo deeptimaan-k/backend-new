@@ -14,6 +14,7 @@ const AccessKey = require("../models/accessKeySchema.js");
 const generateAccessKey = require("crypto").randomBytes;
 const markAttendanceService = require("../service/markAttendanceService.js");
 const Exam = require("../models/examSchema.js");
+const School = require("../models/schoolSchema.js");
 
 // // code written by shiv
 
@@ -37,12 +38,13 @@ const generateAccessAndRefreshTokens = async (userId) => {
   }
 };
 
+
 const adminRegister = async (req, res, next) => {
   try {
-    const { schoolName, email, password, board, schoolCode, state, city, phoneNo } = req.body;
+    const { email, password, phoneNo } = req.body;
 
     // Validate required fields
-    if (!schoolName || !email || !password || !board || !schoolCode || !state || !city || !phoneNo) {
+    if ( !email || !password ||  !phoneNo) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -54,13 +56,8 @@ const adminRegister = async (req, res, next) => {
 
     // Create a new Admin instance
     const newAdmin = new Admin({
-      schoolName,
       email,
       password, // Hash the password
-      board,
-      schoolCode,
-      state,
-      city,
       phoneNo,
     });
 
@@ -72,6 +69,60 @@ const adminRegister = async (req, res, next) => {
 
   } catch (error) {
     console.error('Registration error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+const createSchool = async (req, res, next) => {
+  try {
+    const { schoolName, schoolCode, address, board } = req.body;
+    //const adminId = req.admin._id; // Assuming authentication middleware sets admin ID in req.admin
+    //temprory 
+    const admin = await Admin.findById(req.params.id).select(
+      "-password --refreshToken"
+    );
+    if (!admin) {
+      throw new ApiError(404, "No admin found");
+    }
+    const adminId = req.params.id;
+
+    // Validate required fields
+    if (!schoolName || !schoolCode || !address || !board) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    // Check if the school code already exists
+    const existingSchool = await School.findOne({ schoolCode });
+    if (existingSchool) {
+      return res.status(400).json({ message: 'School code already in use' });
+    }
+
+    // Create a new School instance
+    const newSchool = new School({
+      name: schoolName,
+      address,
+      schoolCode,
+      board,
+      admin: adminId, // Link the school to the currently logged-in admin
+    });
+
+    // Save the School to the database
+    const savedSchool = await newSchool.save();
+
+    // Respond with success message
+    res.status(201).json({
+      message: 'School created successfully',
+      school: {
+        id: savedSchool._id,
+        name: savedSchool.name,
+        schoolCode: savedSchool.schoolCode,
+        address: savedSchool.address,
+        board: savedSchool.board,
+      }
+    });
+
+  } catch (error) {
+    console.error('School creation error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
@@ -425,4 +476,5 @@ module.exports = {
   createExam,
   findAvailableTeachers,
   createAccessKeyAndAssignSchedule,
+  createSchool
 };
