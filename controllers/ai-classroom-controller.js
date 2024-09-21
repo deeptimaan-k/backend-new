@@ -86,7 +86,9 @@ const addAssignment = async (req, res) => {
 
         // console.log('Request Payload:', requestPayload);
 
+
         const response = await axios.post('https://backend-new-app-g6c3bhamergxe9c0.eastus-01.azurewebsites.net/getQues/', requestPayload);
+
 
         // console.log('API Response:', response.data);
 
@@ -186,9 +188,73 @@ const getClassSubjectDetails = async (req, res) => {
     }
 };
 
+const addLessonPlanning =async(req,res)=>{
+    const {class:className,subject,chapter,topic,lessonPlan}=req.body;
+    try{
+        const classroom = await AiClassS.findOne({ class: className, subject });
+        if (!classroom) {
+            return res.status(404).json({ message: 'Class and subject not found' });
+        }
+        const requestPayload = {
+            class:className,
+            subject,
+            chapter,
+            topic,
+            lessonPlan
+        };
+        const response = await axios.post('https://lesson-plan-ai.eastus.azurewebsites.net/getLessonPlan/', requestPayload);
+        const lessonPlan = response.data;
+        const newLessonPlan = new LessonPlan({
+            class:className,
+            subject,
+            chapter,
+            topic,
+            lessonPlan
+        });
+        const savedLessonPlan = await newLessonPlan.save();
+        res.status(201).json(savedLessonPlan);
+        }
+        catch (error) {
+            console.error('Error adding lesson plan:', error);
+            res.status(500).json({ message: 'Internal server error', error });
+        }
+};
+
+const addAnotherTopic=async(req,res)=>{
+    const {class:className,subject,chapter,topic}=req.body;
+    try{
+        const classroom = await AiClassS.findOne({ class:className , subject});
+        if(!classroom){
+            return res.status(404).json({message:'Class and subject not found'});
+        }
+        const requestPayload = {
+            class:className,
+            subject,
+            chapter,
+            topic
+        };
+        const response = await axios.post('https://topic-ai.eastus.azurewebsites.net/getTopic/',requestPayload);
+        const assignment = new Assignment({
+            class:className,
+            subject,
+            chapter,
+            topic,
+            questions:response.data.questions
+        });
+        const savedAssignment = await assignment.save();
+        res.status(201).json(savedAssignment);
+    }
+    catch(error){
+        console.error('Error adding another topic:',error);
+        res.status(500).json({message:'Internal server error',error});
+    }
+}
+
 module.exports = {
     addClassSubjectChapter,
     addAssignment,
     getClassSubjectDetails,
-    getAssignmentsByTopic
+    getAssignmentsByTopic,
+    addLessonPlanning,
+    addAnotherTopic
 };

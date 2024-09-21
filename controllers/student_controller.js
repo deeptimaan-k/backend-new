@@ -109,6 +109,7 @@ const validateOTP = async (req, res) => {
 }
 
 // inserting a student in db
+
 const studentRegister = async (req, res, next) => {
   try {
     const {
@@ -130,7 +131,9 @@ const studentRegister = async (req, res, next) => {
     } = req.body;
 
     const schoolId =req.params.id; // Ensure schoolId is ObjectId
+
     console.log("Request Body:", req.body); // Log request body to debug
+
 
     // Find the class based on sclassName and section
     const sclass = await Sclass.findOne({
@@ -913,7 +916,137 @@ const academicPerformance = async(req,res)=>{
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
   }
-}
+};
+
+const newStudentRegistration = async (req,res)=>{
+  try {
+    const { name, email, password } = req.body;
+
+    const existingstudent = await newStudent.findOne({email});
+    if (student) {
+      return res.status(400).json({ message: "Student already exists" });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newStudent = await newStudent.create({ name, email, password: hashedPassword });
+    res.status(201).json({ message: "Student created successfully" });
+  }
+  catch (error) {
+    console.log(error)
+    res.status(500).json({ message: "Internal server error" });
+  }
+  };
+
+  const newstudentLogIn = async (req, res) => {
+    try {
+      const { email, password } = req.body;
+  
+      const student = await newStudent.findOne({ email });
+  
+      if (!student) {
+        return res.status(404).json({ message: "Student not found" });
+      }
+  
+      const isMatch = await bcrypt.compare(password, student.password);
+  
+      if (!isMatch) {
+        return res.status(400).json({ message: "Invalid credentials" });
+      }
+  
+      const payload = {
+        student: {
+          id: student.id,
+        },
+      };
+  
+      jwt.sign(
+        payload,
+        process.env.JWT_SECRET,
+        { expiresIn: 3600 },
+        (err, token) => {
+          if (err) throw err;
+          res.status(200).json({ token });
+        }
+      );
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  };
+
+  const getAllStudents = async (req, res) => {
+    try {
+      const students = await Student.find()
+        .populate('sclassName') 
+        .populate('school') 
+        .populate('examResult.subName') 
+        .populate('attendance.subName')
+        .populate('academicPerformance.exam')
+        .exec();
+  
+      res.status(200).json({
+        success: true,
+        data: students,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch students',
+        error: error.message,
+      });
+    }
+  };
+  
+  
+  const filterStudents = async (req, res) => {
+    const { sclassName, section } = req.query;
+  
+    try {
+      // Find the class by name
+      const sclass = await Sclass.findOne({ sclassName }).exec();
+  
+      if (!sclass) {
+        return res.status(404).json({
+          success: false,
+          message: 'Class not found',
+        });
+      }
+  
+      // Build the query based on the class ObjectId and section
+      let query = { sclassName: sclass._id };
+  
+      if (section) {
+        // Check if the section matches the found Sclass section
+        if (sclass.section !== section) {
+          return res.status(404).json({
+            success: false,
+            message: 'No students found for the given section',
+          });
+        }
+        // If section is provided and matches, proceed with the query
+      }
+  
+      const students = await Student.find(query)
+        .populate('sclassName') // Populate related Sclass model
+        .populate('school') // Populate related Admin model
+        .populate('examResult.subName') // Populate related Subject model in examResult
+        .populate('attendance.subName') // Populate related Subject model in attendance
+        .populate('academicPerformance.exam') // Populate related Exam model in academicPerformance
+        .exec();
+  
+      res.status(200).json({
+        success: true,
+        data: students,
+      });
+    } catch (error) {
+      console.error('Error fetching students:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch students',
+        error: error.message,
+      });
+    }
+  };
+  
+  
 
 module.exports = {
   studentRegister,
@@ -936,9 +1069,11 @@ module.exports = {
 
   academicPerformance,
 
+
   sendMobileOTP,
 
   validateOTP,
+
   // studentLogIn,
   // getStudents,
   // getStudentDetail,

@@ -5,7 +5,7 @@ const assignmentResultSchema = new Schema({
     userId: {
         type: Schema.Types.ObjectId,
         required: true,
-        ref: 'User'
+        ref: 'Student'
     },
     assignmentId: {
         type: Schema.Types.ObjectId,
@@ -27,7 +27,11 @@ const assignmentResultSchema = new Schema({
                 required: true
             }
         }
-    ]
+    ],
+    totalMarks: {
+        type: Number,
+        required: true
+    }
 });
 
 const AssignmentResult = mongoose.model('AssignmentResult', assignmentResultSchema);
