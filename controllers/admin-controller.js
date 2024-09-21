@@ -14,6 +14,13 @@ const AccessKey = require("../models/accessKeySchema.js");
 const generateAccessKey = require("crypto").randomBytes;
 const markAttendanceService = require("../service/markAttendanceService.js");
 const Exam = require("../models/examSchema.js");
+const School = require("../models/schoolSchema.js");
+const Finance = require("../models/financeSchema.js");
+const Event = require("../models/eventSchema.js");
+const Notification = require("../models/notificationSchema.js");
+const AdminAccount = require("../models/adminAccount.js");
+
+
 
 // // code written by shiv
 
@@ -37,44 +44,61 @@ const generateAccessAndRefreshTokens = async (userId) => {
   }
 };
 
+
 const adminRegister = async (req, res, next) => {
   try {
-    const { schoolName, email, password, board, schoolCode, state, city, phoneNo } = req.body;
+    const { email, password, phoneNo, schoolName, address, schoolCode, board } = req.body;
 
     // Validate required fields
-    if (!schoolName || !email || !password || !board || !schoolCode || !state || !city || !phoneNo) {
+    if (!email || !password || !phoneNo || !schoolName || !address || !schoolCode || !board) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    // Check if the email or schoolCode already exists
+    // Check if the email already exists
     const existingUser = await Admin.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'Email already in use' });
     }
 
-    // Create a new Admin instance
+    // Create the new Admin instance
     const newAdmin = new Admin({
-      schoolName,
       email,
-      password, // Hash the password
-      board,
-      schoolCode,
-      state,
-      city,
+      password, // Make sure password is hashed before saving
       phoneNo,
     });
 
-    // Save the new Admin to the database
+    // Save the Admin first to generate its _id
+    await newAdmin.save();
+
+    // Create the School instance and associate it with the Admin
+    const newSchool = new School({
+      name: schoolName,
+      address,
+      schoolCode,
+      board,
+      admin: newAdmin._id, // Assign the newly created admin's _id to the school
+    });
+
+    // Save the School
+    await newSchool.save();
+
+    // Update Admin with the School reference
+    newAdmin.school = newSchool._id;
     await newAdmin.save();
 
     // Respond with success message
-    res.status(201).json({ message: 'Admin registered successfully' });
+    res.status(201).json({
+      message: 'Admin and School registered successfully',
+      admin: newAdmin,
+      school: newSchool,
+    });
 
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 
 // Admin login
 const adminLogIn = async (req, res, next) => {
@@ -134,41 +158,141 @@ const adminLogIn = async (req, res, next) => {
 // Get admin details
 const getAdminDetail = async (req, res, next) => {
   try {
-    const admin = await Admin.findById(req.params.id).select(
-      "-password --refreshToken"
-    );
+    // Fetch admin by ID without populating
+    const admin = await Admin.findById(req.params.id)
+      .select("-password -refreshToken");
+
     if (!admin) {
       throw new ApiError(404, "No admin found");
     }
-    // Ensure avatar URL is correctly handled
-    const avatarUrl = admin.avatar
-      ? admin.avatar.url
-      : "https://via.placeholder.com/200x200.png";
-    const adminDetails = {
-      ...admin.toJSON(),
-      avatar: avatarUrl,
+
+    // Fetch the associated school
+    const school = await School.findById(admin.school);
+    
+    if (!school) {
+      throw new ApiError(404, "No school associated with this admin");
+    }
+
+    // Fetch finances, employees, students, events, notifications, and notices associated with the school
+    const finances = await Finance.find({ school: school._id });
+    const employees = await Teacher.find({ school: school._id });
+    const students = await Student.find({ school: school._id });
+    const events = await Event.find({ school: school._id });
+    const notifications = await Notification.find({ school: school._id });
+    const notices = await Notice.find({ school: school._id }); // Fetch notices associated with the school
+    const accountDetails = await AdminAccount.findOne({ school: school._id }); // Use findOne if you expect a single document
+
+    // Construct the response object
+    const schoolResponse = {
+      _id: admin._id, // Include the admin ID if needed
+      email: admin.email,
+      role: admin.role,
+      phoneNo: admin.phoneNo,
+      createdAt: admin.createdAt,
+      updatedAt: admin.updatedAt,
+      school: {
+        schoolName: school.name || "N/A",
+        address: school.address || "N/A",
+        schoolCode : school.schoolCode || "N/A",
+        board : school.board || "N/A",
+        phone: school.phoneNo || "N/A",
+        email: admin.email || "N/A",
+      
+        employees: {
+          teachers: employees.map(teacher => ({
+            id: teacher._id,
+            name: teacher.name,
+            email: teacher.email,
+            phoneNo: teacher.phoneNo,
+            positionRole: teacher.positionrole || "N/A",
+            role: teacher.role,
+            teachSubject: teacher.teachSubject ? teacher.teachSubject.name : "N/A", // Assuming name is a field in Subject schema
+            teachSclass: teacher.teachSclass ? teacher.teachSclass.name : "N/A", // Assuming name is a field in Sclass schema
+            attendance: teacher.attendance,
+            schedule: teacher.schedule,
+            tempSchedule: teacher.tempSchedule,
+          })) || [],
+          staff: employees.filter(emp => emp.role !== "Teacher").map(staff => ({
+            id: staff._id,
+            name: staff.name,
+            role: staff.role,
+            email: staff.email,
+            phone: staff.phoneNo,
+          })) || []
+        },
+        students: students.map(student => ({
+          id: student._id,
+          name: student.name,
+          rollNum: student.rollNum,
+          gender: student.gender,
+          address: student.address,
+          phoneNo: student.phoneNo,
+          adharNo: student.adharNo,
+          extraActivity: student.extraActivity,
+          sclassName: student.sclassName,
+          role: student.role,
+          examResult: student.examResult,
+          attendance: student.attendance,
+          achievements: student.achievements,
+          parentDetails: student.parentDetails,
+          academicPerformance: student.academicPerformance,
+        })) || [],
+        finance: {
+          totalIncome: finances.reduce((sum, fin) => fin.type === "Revenue" ? sum + fin.amount : sum, 0) || 0,
+          totalExpense: finances.reduce((sum, fin) => fin.type === "Expense" ? sum + fin.amount : sum, 0) || 0,
+          details: {
+            income: finances.filter(fin => fin.type === "Revenue").map(income => ({
+              source: income.description,
+              amount: income.amount,
+            })) || [],
+            expenses: finances.filter(fin => fin.type === "Expense").map(expense => ({
+              category: expense.description,
+              amount: expense.amount,
+            })) || []
+          }
+        },
+        notifications: notifications.map(notification => ({
+          id: notification._id,
+          message: notification.message,
+          date: notification.date,
+          type: notification.type,
+        })) || [],
+        notices: notices.map(notice => ({  // Map the notices here
+          id: notice._id,
+          title: notice.title,
+          description: notice.description,
+          date: notice.createdAt, // Ensure to use createdAt for date
+        })) || [],
+        events: events.map(event => ({
+          id: event._id,
+          eventName: event.eventName || "N/A",
+          eventDate: event.eventDate || "N/A",
+          description: event.description,
+        })) || [],
+        accountDetails: accountDetails ? {
+          accountNumber: accountDetails.accountNumber || "N/A",
+          ifscCode: accountDetails.ifscCode || "N/A",
+          bankName: accountDetails.bankName || "N/A",
+          balance: accountDetails.balance || 0,
+        } : null,
+      },
     };
-    res
-      .status(200)
-      .json(
-        new ApiResponse(
-          200,
-          adminDetails,
-          "Admin details retrieved successfully"
-        )
-      );
+
+    res.status(200).json(
+      new ApiResponse(200, schoolResponse, "Admin details retrieved successfully")
+    );
   } catch (err) {
-    return res
-      .status(err.statusCode || 500)
-      .json(
-        new ApiResponse(
-          err.statusCode || 500,
-          null,
-          err.message || "Internal Server Error"
-        )
-      );
+    return res.status(err.statusCode || 500).json(
+      new ApiResponse(err.statusCode || 500, null, err.message || "Internal Server Error")
+    );
   }
 };
+
+
+
+
+
+
 
 const updateAdmin = async (req, res, next) => {
   try {
@@ -425,4 +549,5 @@ module.exports = {
   createExam,
   findAvailableTeachers,
   createAccessKeyAndAssignSchedule,
+
 };

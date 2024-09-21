@@ -16,7 +16,7 @@ const noticeSchema = new mongoose.Schema(
     },
     school: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Admin",
+      ref: "School",
     },
   },
   { timestamps: true }
