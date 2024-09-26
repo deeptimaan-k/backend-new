@@ -16,6 +16,7 @@ const AssignmentSchema = new Schema({
     deadline: Date,
     createdAt: { type: Date, default: Date.now },
     attempted: Boolean,
+    level: String,
 });
 
 module.exports = mongoose.model('Assignment', AssignmentSchema);

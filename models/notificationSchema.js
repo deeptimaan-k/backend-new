@@ -10,14 +10,9 @@ const notificationSchema = new mongoose.Schema({
     }, // assuming you have a User model
     sender: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true }, // the teacher or admin
     isRead: { type: Boolean, default: false },
-    school: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'School',  
-    
-    },
     createdAt: { type: Date, default: Date.now },
 });
 
 const Notification = mongoose.model("Notification", notificationSchema);
-module.exports = Notification;
 
+module.exports = Notification;

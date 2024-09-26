@@ -16,7 +16,8 @@ const classroomSchema = new Schema({
             ],
             notes: [String]
         }
-    ]
+    ],
+    lessonPlan: String,
 });
 
 const AiClassS = mongoose.model('AiClassS', classroomSchema);

@@ -1,21 +1,48 @@
 const Notification = require('../models/notificationSchema');
 
+const User = require('../models/adminSchema');
+//school schema bane ke baad link krna hai
+// const School = require('../models/');
+
 const sendNotification = async (req, res) => {
-    const { senderId, recipientId, title, message } = req.body;
+    const { senderId, title, message } = req.body;
+
     try {
-        const newNotification = new Notification({
-            sender: senderId,
-            recipient: recipientId,
-            title,
-            message
+        const sender = await User.findById(senderId);
+        if (!sender || sender.role !== 'Admin') {
+            return res.status(403).json({ message: 'Only admins are allowed to send notifications' });
+        }
+
+        const school = await User.findOne({ admin: senderId });
+        if (!school) {
+            return res.status(404).json({ message: 'School not found for this admin' });
+        }
+
+        const recipients = await User.find({ school: school._id });
+        if (recipients.length === 0) {
+            return res.status(404).json({ message: 'No users found in this school' });
+        }
+
+        const notifications = await Promise.all(recipients.map(async (recipient) => {
+            const newNotification = new Notification({
+                sender: senderId,
+                recipient: recipient._id,
+                title,
+                message
+            });
+            return await newNotification.save();
+        }));
+
+        res.status(201).json({
+            message: 'Notifications sent to all school members successfully',
+            notifications
         });
-        const savedNotification = await newNotification.save();
-        res.status(201).json(savedNotification);
     } catch (error) {
-        console.error('Error sending notification:', error);
+        console.error('Error sending notifications:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
 
 const getNotifications = async (req, res) => {
     const { userId } = req.params;

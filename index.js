@@ -8,7 +8,7 @@ const Routes = require("./routes/route.js");
 const { errorHandler } = require("./middleware/error.middlewares.js");
 
 const PORT = process.env.PORT || 5002;
-//config
+
 dotenv.config();
 
 

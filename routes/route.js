@@ -10,7 +10,6 @@ const {
   createAccessKeyAndAssignSchedule,
   findAvailableTeachers,
   createExam,
-  createSchool,
 } = require("../controllers/admin-controller.js");
 
 const {
@@ -21,12 +20,10 @@ const {
   getSclassDetail,
   getSclassStudents,
 } = require("../controllers/class-controller.js");
-
 const {
   complainCreate,
   complainList,
 } = require("../controllers/complain-controller.js");
-
 const {
   noticeCreate,
   noticeList,
@@ -34,7 +31,6 @@ const {
   deleteNotice,
   updateNotice,
 } = require("../controllers/notice-controller.js");
-
 const {
   studentRegister,
   getStudentById,
@@ -45,12 +41,11 @@ const {
   markAttendanceWithAccessKey,
   getStudentAchievement,
   academicPerformance,
-
-  sendMobileOTP,
-  validateOTP
-
+  newStudentRegistration,
+  newstudentLogIn,
+  filterStudents,
+  getAllStudents
 } = require("../controllers/student_controller.js");
-
 const {
   subjectCreate,
   classSubjects,
@@ -61,7 +56,6 @@ const {
   allSubjects,
   deleteSubjects,
 } = require("../controllers/subject-controller.js");
-
 const {
   teacherRegister,
   teacherLogInWithEmail,
@@ -100,51 +94,6 @@ const {
   getClassResultAnalysis
 }= require("../controllers/result-controller.js")
 
-
-
-
-//dashboard
-const {
-  getDashboardStats,
-  getStudentList,
-  updateStudent,
-  deleteStudent,
-  getAbsentTeachers,
-  addSubstitution,
-  createEvent,
-  getAllEvents,
-  deleteEvent,
-  createFinanceRecord,
-  getAllFinanceRecords,
-  deleteFinanceRecord,
-} = require("../controllers/dashboard-controller");
-
-// Dashboard routes
-router.get("/stats", verifyJWT, verifyAdminRole, getDashboardStats);
-
-// Student management
-router.get("/students", verifyJWT, verifyAdminRole, getStudentList);
-router.put("/students/:id", verifyJWT, verifyAdminRole, updateStudent);
-router.delete("/students/:id", verifyJWT, verifyAdminRole, deleteStudent);
-
-// Teacher management
-router.get("/absent-teachers", verifyJWT, verifyAdminRole, getAbsentTeachers);
-router.post("/add-substitution", verifyJWT, verifyAdminRole, addSubstitution);
-
-// Event management
-router.post("/events", verifyJWT, verifyAdminRole, createEvent);
-router.get("/events",verifyJWT, verifyAdminRole,  getAllEvents);
-router.delete("/events/:id", verifyJWT, verifyAdminRole, deleteEvent);
-
-// Finance management
-router.post("/finances", verifyJWT, verifyAdminRole, createFinanceRecord);
-router.get("/finances", verifyJWT, verifyAdminRole, getAllFinanceRecords);
-router.delete("/finances/:id", verifyJWT, verifyAdminRole, deleteFinanceRecord);
-
-
-
-
-
 const {
   fetchTranscriptText,
   askAI,
@@ -166,7 +115,6 @@ const {
 const{
   addAssignmentByTeacher,
   pendingAssignment,
-
 }= require("../controllers/assignment-controller.js");
 
 const {
@@ -224,18 +172,12 @@ router.delete("/events/:id", deleteEvent);
 // Finance management
 router.post("/finances", createFinanceRecord);
 router.get("/finances", getAllFinanceRecords);
-router.delete("/finances/:id", deleteFinanceRecord
-}= require("../controllers/assignment-controller.js")
-
+router.delete("/finances/:id", deleteFinanceRecord);
 
 // Admin
 
 router.get("/",(req,res)=>{
-
-  res.send("working date 17 sep test");
-
-  res.send("working date 17 aug");
-
+  res.send("working date 21 sep test");
 })
 
 router.post("/AdminReg", upload.single("avatar"), adminRegister);
@@ -258,7 +200,7 @@ router.get("/findavailableTeacher", findAvailableTeachers);
 
 router.post("/createExam", verifyJWT, createExam);
 
-// Student 
+// Student
 
 router.post("/StudentReg/:id", verifyJWT, studentRegister);
 router.post("/StudentLoginWithEmail", newstudentLogIn);
@@ -268,7 +210,7 @@ router.post("/StudentLoginWithEmail", newstudentLogIn);
 router.get("/StudentsById/:id", getStudentById);
 router.get('/allstudents', getAllStudents);
 router.get('/filterstudents', filterStudents);
-router.post("/getAllStudentByClassAndSection/:schoolid",getStudentsByClassAndSection);
+router.get("/getAllStudentByClassAndSection/:schoolid",getStudentsByClassAndSection);
 
 router.put("/addStudentAchievements/:studentId", addStudentAchievement);
 
@@ -281,10 +223,6 @@ router.get("/getStudentAttendance", getStudentAttendance);
 router.get("/getStudentAchievement/:studentId", getStudentAchievement);
 
 router.get("/academicPerformance/:studentId", academicPerformance);
-
-router.post("/Parent/sendOTP", sendMobileOTP);
-
-router.post("/Parent/validateOTP", validateOTP);
 
 // Teacher
 
@@ -330,7 +268,7 @@ router.get("/ComplainList/:id", complainList);
 
 // Sclass
 
-router.post("/SclassCreate",  sclassCreate);
+router.post("/SclassCreate", verifyJWT, sclassCreate);
 
 router.get("/SclassList/:id", sclassList);
 router.get("/Sclass/:id", getSclassDetail);
@@ -379,7 +317,7 @@ router.post("/uploadNotesFromAi",uploadNotesFromAi);
 router.post("/displayNotes",displayNotes);
 
 //notification
-router.post('/sendNotification', sendNotification);
+router.post('/sendNotificationByAdmin', sendNotification);
 router.get('/getNotification/:id', getNotifications);
 router.put('/markAsRead/:id', markAsRead);
 
@@ -394,7 +332,6 @@ router.put('/updateLeaveStatus/:id', updateLeaveStatus);
 //assignment by teacher
 router.post('/addAssignmentByTeacher', addAssignmentByTeacher);
 router.get('/pendingAssignment/:classId', pendingAssignment);
-
 
 //fees details 
 
@@ -423,6 +360,5 @@ router.get("/revenues/total", getTotalRevenue);
 router.post('/fetch-transcript', fetchTranscriptText);
 router.post('/ask-ai', askAI);
 router.get('/fetch-video/:topic', fetchVideoByTopic);
-
 
 module.exports = router;

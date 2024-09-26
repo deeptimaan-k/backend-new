@@ -66,7 +66,7 @@ const addClassSubjectChapter = async (req, res) => {
 };
 
 const addAssignment = async (req, res) => {
-    const { class: className, subject, chapter, topic, title, ques_type, num_ques } = req.body;
+    const { class: className, subject, chapter, topic, title, ques_type, num_ques,level } = req.body;
 
     try {
         // Fetch the class document based on class name and subject
@@ -80,15 +80,15 @@ const addAssignment = async (req, res) => {
             class: className,
             subject,
             chapter,
+            topic,
             ques_type,
-            num_ques
+            num_ques,
+            level
         };
 
         // console.log('Request Payload:', requestPayload);
 
-
-        const response = await axios.post('https://backend-new-app-g6c3bhamergxe9c0.eastus-01.azurewebsites.net/getQues/', requestPayload);
-
+        const response = await axios.post('https://ai-qna-gvhkarb0faf3fvhs.eastus-01.azurewebsites.net/getQues/', requestPayload);
 
         // console.log('API Response:', response.data);
 
@@ -107,6 +107,7 @@ const addAssignment = async (req, res) => {
             subject,
             chapter,
             topic,
+            level,
             questions: formattedQuestions
         });
 
@@ -248,7 +249,7 @@ const addAnotherTopic=async(req,res)=>{
         console.error('Error adding another topic:',error);
         res.status(500).json({message:'Internal server error',error});
     }
-}
+};
 
 module.exports = {
     addClassSubjectChapter,

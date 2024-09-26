@@ -1,5 +1,6 @@
 const Assignment = require("../models/assignmentSchema");
 const TestResult = require("../models/resultSchema");
+const axios = require('axios');
 
 const submitTest = async (req, res) => {
     const { assignmentId, userId, results } = req.body;
@@ -27,6 +28,8 @@ const submitTest = async (req, res) => {
             }
             return {
                 questionId: question._id,
+                question: question.question,
+                userAnswer: result.userAnswer,
                 correct: isCorrect,
                 attempted: result.userAnswer !== null && result.userAnswer !== undefined
             };
@@ -35,24 +38,49 @@ const submitTest = async (req, res) => {
         const newTestResult = new TestResult({
             userId,
             assignmentId,
-            questions,
+            results: questions,
             totalMarks
         });
 
         await newTestResult.save();
 
-        assignment.attempted = true;
+        const analysisRequest = {
+            response: results.map(result => ({
+                question: result.question,
+                studentAnswer: result.userAnswer,
+                correctAnswer: assignment.questions.find(q => q.question === result.question)?.correct
+            })).filter(item => item.question && item.studentAnswer !== undefined)
+        };
+
+        const analysisResponse = await axios.post('https://ai-qna-gvhkarb0faf3fvhs.eastus-01.azurewebsites.net/analyse/', analysisRequest);
+
+        if (!Array.isArray(analysisResponse.data)) {
+            throw new Error('Invalid response structure from AI API');
+        }
+
+        const analysisData = analysisResponse.data.map((item, index) => ({
+            question: questions[index]?.question || null,
+            studentAnswer: item.studentAnswer,
+            correctAnswer: item.verdict === 'correct',
+            advice: item.advice,
+            improvement: item.improvement
+        }));
+
+        newTestResult.analyse = analysisData; 
+        await newTestResult.save();
 
         res.status(200).json({
-            message: 'Test results saved successfully',
+            message: 'Test results and analysis saved successfully',
             questions,
-            totalMarks
+            totalMarks,
+            analysis: analysisData
         });
     } catch (error) {
         console.error('Error submitting test:', error);
         res.status(500).json({ message: 'Internal server error', error });
     }
 };
+
 
 const getClassResultAnalysis = async (req, res) => {
     const { classId } = req.params;

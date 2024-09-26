@@ -1,6 +1,21 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+const analysisSchema = new Schema({
+    question: {
+        type: String,
+        required: [true, 'Question text is required']
+    },
+    studentAnswer: {
+        type: Schema.Types.Mixed,
+    },
+    correctAnswer: {
+        type: Schema.Types.Mixed,
+    },
+    advice: [String],
+    improvement: [String]
+}, { _id: false });
+
 const assignmentResultSchema = new Schema({
     userId: {
         type: Schema.Types.ObjectId,
@@ -12,27 +27,29 @@ const assignmentResultSchema = new Schema({
         required: true,
         ref: 'Assignment'
     },
-    questions: [
+    results: [
         {
-            questionId: {
-                type: Schema.Types.ObjectId,
-                required: true
+            question: {
+                type: String,
+                required: [true, 'Question text is required']
+            },
+            userAnswer: {
+                type: Schema.Types.Mixed,
             },
             correct: {
                 type: Boolean,
-                required: true
             },
             attempted: {
                 type: Boolean,
-                required: true
             }
         }
     ],
     totalMarks: {
         type: Number,
-        required: true
-    }
-});
+        required: [true, 'Total marks are required']
+    },
+    analyse: [analysisSchema]
+}, { timestamps: true });
 
 const AssignmentResult = mongoose.model('AssignmentResult', assignmentResultSchema);
 module.exports = AssignmentResult;

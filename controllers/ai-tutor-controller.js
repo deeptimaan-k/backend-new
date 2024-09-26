@@ -1,15 +1,27 @@
-const AWS = require('aws-sdk');
+require('dotenv').config();
+const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3');
 const axios = require('axios');
-const s3 = new AWS.S3();
+// const stream = require('stream');
 
+const s3 = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    }
+});
+
+// Function to fetch video and transcript
 const fetchVideoAndTranscript = async (videoName) => {
-    const videoParams = { Bucket: 'ai-tutor-videos', Key: `${videoName}.mp4` };
-    const transcriptParams = { Bucket: 'ai-tutor-videos', Key: `${videoName}.json` };
+    const videoParams = { Bucket:'ai-tutor-videos', Key: `${videoName}.mp4` };
+    const transcriptParams = { Bucket:'ai-tutor-videos', Key: `${videoName}.json` };
 
-    const video = await s3.getObject(videoParams).promise();
-    const transcript = await s3.getObject(transcriptParams).promise();
+    const video = await s3.send(new GetObjectCommand(videoParams));
+    const transcript = await s3.send(new GetObjectCommand(transcriptParams));
 
-    return { video, transcript: JSON.parse(transcript.Body.toString()) };
+    // const transcriptData = await streamToString(transcript.Body);
+
+    return { video, transcript: JSON.parse(transcriptData) };
 };
 
 const floorToNearestFive = (time) => {
@@ -26,6 +38,7 @@ const fetchTranscriptText = async (req, res) => {
         const transcriptText = transcript[flooredTime];
         res.json({ transcriptText });
     } catch (error) {
+        console.error('Error fetching transcript:', error);
         res.status(500).json({ error: 'Error fetching transcript' });
     }
 };
@@ -37,31 +50,35 @@ const askAI = async (req, res) => {
         const aiResponse = await axios.post('your-ai-endpoint-url', { text: transcriptText });
         res.json(aiResponse.data);
     } catch (error) {
+        console.error('Error communicating with AI:', error);
         res.status(500).json({ error: 'Error communicating with AI' });
     }
 };
 
+// Fetch video by topic
 const fetchVideoByTopic = async (req, res) => {
     const topic = req.params.topic;
 
     try {
         const videoName = getVideoNameForTopic(topic);
-        const video = await s3.getObject({ Bucket: 'ai-tutor-videos', Key: `${videoName}.mp4` }).promise();
+        const videoParams = { Bucket:'ai-tutor-videos', Key: `${videoName}.mp4` };
+        const video = await s3.send(new GetObjectCommand(videoParams));
 
-        res.send(video.Body);
+        res.setHeader('Content-Type', 'video/mp4');
+        video.Body.pipe(res);
     } catch (error) {
+        console.error('Error fetching video:', error);
         res.status(500).json({ error: 'Error fetching video' });
     }
 };
 
-// Example function to map topics to video names
-function getVideoNameForTopic(topic) {
-    const dummyMapping = {
-        'topic1': 'video1',
-        'topic2': 'video2',
-    };
-    return dummyMapping[topic] || 'default-video';
-}
+// function getVideoNameForTopic(topic) {
+//     const dummyMapping = {
+//         'topic1': 'video1',
+//         'topic2': 'video2',
+//     };
+//     return dummyMapping[topic] || 'default-video';
+// }
 
 module.exports = {
     fetchTranscriptText,

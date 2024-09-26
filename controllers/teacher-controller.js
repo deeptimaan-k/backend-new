@@ -1,4 +1,4 @@
-const bcrypt = require("bcrypt");
+// const bcrypt = require("bcrypt");
 const Teacher = require("../models/teacherSchema.js");
 const Subject = require("../models/subjectSchema.js");
 const { ApiResponse } = require("../utils/ApiResponse.js");
@@ -8,8 +8,46 @@ const nodemailer = require("nodemailer");
 const { ApiError } = require("../utils/ApiError.js");
 const Student = require("../models/studentSchema.js");
 const Exam = require("../models/examSchema.js");
+// Register teacher (only admin)
+// const teacherRegister = async (req, res) => {
+//   const { name, email, role, school, teachSubject, teachSclass, phoneNo } =
+//     req.body;
+//   try {
+//     // const salt = await bcrypt.genSalt(10);
+//     // const hashedPass = await bcrypt.hash(password, salt);
 
+//     const teacher = new Teacher({
+//       name,
+//       email,
+//       // password: hashedPass,
+//       phoneNo,
+//       role,
+//       school,
+//       teachSubject,
+//       teachSclass,
+//     });
 
+//     const existingTeacherByEmail = await Teacher.findOne({ email });
+
+//     if (existingTeacherByEmail) {
+//       return res
+//         .status(400)
+//         .send(new ApiResponse(400, null, "Email already exists"));
+//       // throw new ApiError(400, "Email already exists");
+//     } else {
+//       const result = await teacher.save();
+//       await Subject.findByIdAndUpdate(teachSubject, { teacher: teacher._id });
+//       result.password = undefined;
+//       return res
+//         .status(201)
+//         .send(new ApiResponse(201, result, "Teacher registered successfully"));
+//     }
+//   } catch (err) {
+//     return res
+//       .status(500)
+//       .json(new ApiResponse(500, "Internal Server Error", [err.message]));
+//   }
+// };
 
 const teacherRegister = async (req, res, next) => {
   const { name, email, role, school, teachSubject, teachSclass, phoneNo } =
@@ -87,6 +125,8 @@ const teacherLogInWithEmail = async (req, res, next) => {
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
     teacher.otp = otp;
     await teacher.save();
+
+    console.log();
 
     // Send OTP through email
     // await sendOtpThroughMail(teacher.email, otp);
@@ -462,7 +502,7 @@ const getTeacherScheduleById = async (req, res, next) => {
         new ApiResponse(
           error.statusCode || 500,
           null,
-          error.message || "Internal Server Error"
+          "Internal Server Error"
         )
       );
   }
@@ -581,6 +621,35 @@ const getExamByTeacherId = async (req, res, next) => {
   }
 };
 
+const getAllTeacherDetails = async (req, res) => {
+  try {
+    const teachers = await Teacher.find()     // Populate school details
+      .exec();
+
+    // if (!teachers || teachers.length === 0) {
+    //   return res.status(404).json({
+    //     message: "No teachers found",
+    //     success: false,
+    //     error: error.message
+    //   });
+    // }
+
+    res.status(200).json({
+      message: "Teachers fetched successfully",
+      teachers,
+      success: true
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal Server Error",
+      error: error.message,
+      success: false
+    });
+  }
+};
+
+
+
 module.exports = {
   storeTeacherBasicDetails,
   teacherRegister,
@@ -595,4 +664,5 @@ module.exports = {
   getTeacherScheduleById,
   uploadMarks,
   getExamByTeacherId,
+  getAllTeacherDetails
 };

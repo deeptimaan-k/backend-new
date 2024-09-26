@@ -35,7 +35,7 @@ const sclassSchema = new mongoose.Schema(
     },
     school: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "School",
+      ref: "Admin",
       required: true,
     },
     subjects: [
