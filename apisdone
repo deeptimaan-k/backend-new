@@ -1,0 +1,70 @@
+
+api's done :
+___________
+
+admin registration 
+http://localhost:5002/AdminReg   (post)
+
+admin Login: 
+http://localhost:5002/AdminLogin    (post)
+
+get admin details (post)
+http://localhost:5002/Admin/:id      (get)
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+student registration 
+http://localhost:5002/StudentReg       (post)
+
+student Login
+http://localhost:5002/StudentLogin      (post)
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+TO ADD SUBJECTS
+_______________
+
+
+subjectCreate
+http://localhost:5002/SubjectCreate     (post)
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+teacherRegister
+http://localhost:5002/TeacherReg                  (post)
+
+teacherLogIn
+http://localhost:5002/TeacherLogin                 (post)
+
+
+getTeachers
+http://localhost:5002/Teachers/:id                    (get)
+
+getTeacherDetail
+http://localhost:5002/Teacher/:id                      (get)
+
+deleteTeachers
+http://localhost:5002/Teachers/:id                     (delete)
+
+deleteTeachersByClass
+http://localhost:5002/TeachersClass/:id                (delete)
+
+
+deleteTeacher
+http://localhost:5002/Teacher/:id                     (delete)
+
+
+updateTeacherSubject
+http://localhost:5002/TeacherSubject                  (put)
+
+
+teacherAttendance
+http://localhost:5002/TeacherAttendance/:id             (post)
+
