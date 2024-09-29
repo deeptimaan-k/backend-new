@@ -10,6 +10,13 @@ const {
   createAccessKeyAndAssignSchedule,
   findAvailableTeachers,
   createExam,
+  getAdminAccountDetailsByAdminID,
+  getAllStudentsByAdminID,
+  getEmployeesByAdminID,
+  getEventsByAdminID,
+  getFinancesByAdminID,
+  getNoticesByAdminID,
+  getNotificationsByAdminID,
 } = require("../controllers/admin-controller.js");
 
 const {
@@ -202,10 +209,20 @@ router.post("/createExam", verifyJWT, createExam);
 
 // Student
 
-router.post("/StudentReg/:id", verifyJWT, studentRegister);
+router.post("/StudentReg/:id", studentRegister);
 router.post("/StudentLoginWithEmail", newstudentLogIn);
 
 // router.post("/StudentLogin", studentLogIn);
+// router by farhan
+// for all details are getting fetched from admin side 
+router.get('/admin/:id/students', getAllStudentsByAdminID);
+router.get('/admin/:id/employees', getEmployeesByAdminID);
+router.get('/admin/:id/finances', getFinancesByAdminID);
+router.get('/admin/:id/events', getEventsByAdminID);
+router.get('/admin/:id/notifications', getNotificationsByAdminID);
+router.get('/admin/:id/notices', getNoticesByAdminID);
+router.get('/admin/:id/account-details', getAdminAccountDetailsByAdminID);
+//
 
 router.get("/StudentsById/:id", getStudentById);
 router.get('/allstudents', getAllStudents);

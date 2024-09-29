@@ -2,9 +2,10 @@ const mongoose = require('mongoose');
 
 const adminAccountSchema = new mongoose.Schema(
   {
-    adminId: {
+    
+    school: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Admin', // Reference to the Admin model
+      ref: "Admin",
       required: true,
     },
     accountNumber: {

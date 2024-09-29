@@ -1,4 +1,4 @@
-// const bcrypt = require("bcryptjs");
+const bcrypt = require("bcryptjs");
 const Admin = require("../models/adminSchema.js");
 const Sclass = require("../models/sclassSchema.js");
 const Student = require("../models/studentSchema.js");
@@ -14,6 +14,13 @@ const AccessKey = require("../models/accessKeySchema.js");
 const generateAccessKey = require("crypto").randomBytes;
 const markAttendanceService = require("../service/markAttendanceService.js");
 const Exam = require("../models/examSchema.js");
+const School = require("../models/schoolSchema.js");
+const Finance = require("../models/financeSchema.js");
+const Event = require("../models/eventSchema.js");
+const Notification = require("../models/notificationSchema.js");
+const AdminAccount = require("../models/adminAccount.js");
+
+
 
 // // code written by shiv
 
@@ -37,59 +44,61 @@ const generateAccessAndRefreshTokens = async (userId) => {
   }
 };
 
+
 const adminRegister = async (req, res, next) => {
   try {
-    const avatar = req.file
-      ? {
-          url: `/images/${req.file.filename}`,
-          localPath: req.file.path,
-        }
-      : undefined;
-    const admin = new Admin({
-      ...req.body,
-      avatar,
-    });
+    const { email, password, phoneNo, schoolName, address, schoolCode, board } = req.body;
 
-    const existingAdminByEmail = await Admin.findOne({ email: req.body.email });
-    const existingSchool = await Admin.findOne({
-      schoolName: req.body.schoolCode,
-    });
-
-    if (existingAdminByEmail) {
-      throw new ApiError(400, "Email already exists");
-    } else if (existingSchool) {
-      throw new ApiError(400, "School code already exists");
-    } else {
-      await admin.save();
-      const createdAdmin = await Admin.findById(admin._id).select("-password");
-      if (!createdAdmin) {
-        throw new ApiError(
-          500,
-          "Something went wrong while registering the admin"
-        );
-      }
-      return res
-        .status(201)
-        .json(
-          new ApiResponse(
-            201,
-            { admin: createdAdmin },
-            "Admin registered successfully"
-          )
-        );
+    // Validate required fields
+    if (!email || !password || !phoneNo || !schoolName || !address || !schoolCode || !board) {
+      return res.status(400).json({ message: 'All fields are required' });
     }
-  } catch (err) {
-    return res
-      .status(err.statusCode || 500)
-      .json(
-        new ApiResponse(
-          err.statusCode || 500,
-          null,
-          err.message || "Internal Server Error"
-        )
-      );
+
+    // Check if the email already exists
+    const existingUser = await Admin.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Email already in use' });
+    }
+
+    // Create the new Admin instance
+    const newAdmin = new Admin({
+      email,
+      password, // Make sure password is hashed before saving
+      phoneNo,
+    });
+
+    // Save the Admin first to generate its _id
+    await newAdmin.save();
+
+    // Create the School instance and associate it with the Admin
+    const newSchool = new School({
+      name: schoolName,
+      address,
+      schoolCode,
+      board,
+      admin: newAdmin._id, // Assign the newly created admin's _id to the school
+    });
+
+    // Save the School
+    await newSchool.save();
+
+    // Update Admin with the School reference
+    newAdmin.school = newSchool._id;
+    await newAdmin.save();
+
+    // Respond with success message
+    res.status(201).json({
+      message: 'Admin and School registered successfully',
+      admin: newAdmin,
+      school: newSchool,
+    });
+
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 
 // Admin login
 const adminLogIn = async (req, res, next) => {
@@ -106,102 +115,342 @@ const adminLogIn = async (req, res, next) => {
       throw new ApiError(404, "User not found");
     }
 
-    const isPasswordValid = await user.isPasswordCorrect(password);
+    // console.log(`Attempting to log in with email: ${email}`);
+    // console.log(`Plaintext password: ${password}`);
+    // console.log(`Hashed password in DB: ${user.password}`);
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    console.log(`Password match result: ${isPasswordValid}`);
 
     if (!isPasswordValid) {
       throw new ApiError(401, "Invalid password");
     }
 
-    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
-      user._id
-    );
-    const loggedUser = await Admin.findById(user._id).select(
-      "-password -refreshToken"
-    );
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
+    const loggedUser = await Admin.findById(user._id).select("-password -refreshToken");
 
-    // Cookie options for secure transmission
     const options = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Ensure it's true in production
-      sameSite: 'Strict', // CSRF protection
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
     };
 
-    // Handle avatar URL
-    const avatarUrl = loggedUser.avatar
-      ? loggedUser.avatar.url
-      : "https://via.placeholder.com/200x200.png";
+    const avatarUrl = loggedUser.avatar ? loggedUser.avatar.url : "https://via.placeholder.com/200x200.png";
+    const userDetails = { ...loggedUser.toJSON(), avatar: avatarUrl };
 
-    // Prepare user details for response
-    const userDetails = {
-      ...loggedUser.toJSON(),
-      avatar: avatarUrl,
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refreshToken, options)
+      .json(new ApiResponse(200, { user: userDetails, accessToken, refreshToken }, "User logged in successfully"));
+
+  } catch (err) {
+    console.error('Login error:', err);
+    return res
+      .status(err.statusCode || 500)
+      .json(new ApiResponse(err.statusCode || 500, null, err.message || "Internal Server Error"));
+  }
+};
+
+
+
+// Get admin details
+const getAdminDetail = async (req, res, next) => {
+  try {
+    // Fetch admin by ID without populating
+    const admin = await Admin.findById(req.params.id)
+      .select("-password -refreshToken");
+
+    if (!admin) {
+      throw new ApiError(404, "No admin found");
+    }
+    // Fetch the associated school
+    const school = await School.findById(admin.school);
+    console.log(school)
+    console.log(school._id)
+    if (!school) {
+      throw new ApiError(404, "No school associated with this admin");
+    }
+
+    // Fetch finances, employees, students, events, notifications, and notices associated with the school
+    const finances = await Finance.find({ school: school._id });
+    const employees = await Teacher.find({ school: school._id });
+    const students = await Student.find({ school: school._id });
+    const events = await Event.find({ school: school._id });
+    const notifications = await Notification.find({ school: school._id });
+    const notices = await Notice.find({ school: school._id }); // Fetch notices associated with the school
+    const accountDetails = await AdminAccount.findOne({ school: school._id }); // Use findOne if you expect a single document
+
+    // Construct the response object
+    const schoolResponse = {
+      _id: admin._id, // Include the admin ID if needed
+      email: admin.email,
+      role: admin.role,
+      phoneNo: admin.phoneNo,
+      createdAt: admin.createdAt,
+      updatedAt: admin.updatedAt,
+      school: {
+        schoolName: school.name || "N/A",
+        address: school.address || "N/A",
+        schoolCode : school.schoolCode || "N/A",
+        board : school.board || "N/A",
+        phone: school.phoneNo || "N/A",
+        email: admin.email || "N/A",
+      
+        employees: {
+          teachers: employees.map(teacher => ({
+            id: teacher._id,
+            name: teacher.name,
+            email: teacher.email,
+            phoneNo: teacher.phoneNo,
+            positionRole: teacher.positionrole || "N/A",
+            role: teacher.role,
+            teachSubject: teacher.teachSubject ? teacher.teachSubject.name : "N/A", // Assuming name is a field in Subject schema
+            teachSclass: teacher.teachSclass ? teacher.teachSclass.name : "N/A", // Assuming name is a field in Sclass schema
+            attendance: teacher.attendance,
+            schedule: teacher.schedule,
+            tempSchedule: teacher.tempSchedule,
+          })) || [],
+          staff: employees.filter(emp => emp.role !== "Teacher").map(staff => ({
+            id: staff._id,
+            name: staff.name,
+            role: staff.role,
+            email: staff.email,
+            phone: staff.phoneNo,
+          })) || []
+        },
+        students: students.map(student => ({
+          id: student._id,
+          name: student.name,
+          rollNum: student.rollNum,
+          gender: student.gender,
+          address: student.address,
+          phoneNo: student.phoneNo,
+          adharNo: student.adharNo,
+          extraActivity: student.extraActivity,
+          sclassName: student.sclassName,
+          role: student.role,
+          examResult: student.examResult,
+          attendance: student.attendance,
+          achievements: student.achievements,
+          parentDetails: student.parentDetails,
+          academicPerformance: student.academicPerformance,
+        })) || [],
+        finance: {
+          totalIncome: finances.reduce((sum, fin) => fin.type === "Revenue" ? sum + fin.amount : sum, 0) || 0,
+          totalExpense: finances.reduce((sum, fin) => fin.type === "Expense" ? sum + fin.amount : sum, 0) || 0,
+          details: {
+            income: finances.filter(fin => fin.type === "Revenue").map(income => ({
+              source: income.description,
+              amount: income.amount,
+            })) || [],
+            expenses: finances.filter(fin => fin.type === "Expense").map(expense => ({
+              category: expense.description,
+              amount: expense.amount,
+            })) || []
+          }
+        },
+        notifications: notifications.map(notification => ({
+          id: notification._id,
+          message: notification.message,
+          date: notification.date,
+          type: notification.type,
+        })) || [],
+        notices: notices.map(notice => ({  // Map the notices here
+          id: notice._id,
+          title: notice.title,
+          description: notice.description,
+          date: notice.createdAt, // Ensure to use createdAt for date
+        })) || [],
+        events: events.map(event => ({
+          id: event._id,
+          eventName: event.eventName || "N/A",
+          eventDate: event.eventDate || "N/A",
+          description: event.description,
+        })) || [],
+        accountDetails: accountDetails ? {
+          accountNumber: accountDetails.accountNumber || "N/A",
+          ifscCode: accountDetails.ifscCode || "N/A",
+          bankName: accountDetails.bankName || "N/A",
+          balance: accountDetails.balance || 0,
+        } : null,
+      },
     };
 
-    // Set cookies for access and refresh tokens
-    res.cookie("accessToken", accessToken, options);
-    res.cookie("refreshToken", refreshToken, options);
-
-    // Send response with user details and tokens
-    return res.status(200).json(
-      new ApiResponse(
-        200,
-        { user: userDetails, accessToken, refreshToken },
-        "User logged in successfully"
-      )
+    res.status(200).json(
+      new ApiResponse(200, schoolResponse, "Admin details retrieved successfully")
     );
   } catch (err) {
     return res.status(err.statusCode || 500).json(
-      new ApiResponse(
-        err.statusCode || 500,
-        null,
-        err.message || "Internal Server Error"
-      )
+      new ApiResponse(err.statusCode || 500, null, err.message || "Internal Server Error")
     );
   }
 };
 
 
-// Get admin details
-// const getAdminDetail = async (req, res) => {
-//   try {
-//     const adminId = req.params.id;
-
-//     // Check if req.user is defined
-//     if (!req.user || req.user.adminId !== adminId) {
-//       return res.status(403).json({ status: 403, message: "Forbidden: You are not allowed to access this resource" });
-//     }
-
-//     const admin = await Admin.findById(adminId).select('-password');
-
-//     if (!admin) {
-//       return res.status(404).json({ status: 404, message: "Admin not found" });
-//     }
-
-//     return res.status(200).json({ status: 200, data: admin, message: "Admin details fetched successfully" });
-//   } catch (err) {
-//     console.error("Error fetching admin details:", err);
-//     return res.status(500).json({ status: 500, message: "Internal server error" });
-//   }
-// };
-
-const getAdminDetail = async (req, res) => {
+const getAllStudentsByAdminID = async (req, res) => {
   try {
-      const adminId = req.params.id;
-      // console.log("Admin ID:", adminId);  // Log to check if adminId is defined
+    const admin = await Admin.findById(req.params.id).select("-password -refreshToken");
 
-      if (!adminId) {
-          return res.status(400).json(new ApiResponse(400, null, "Admin ID is required"));
-      }
+    if (!admin) {
+      throw new ApiError(404, "No admin found");
+    }
 
-      const admin = await Admin.findById(adminId).select('-password');
-      if (!admin) {
-          return res.status(404).json(new ApiResponse(404, null, "Admin not found"));
-      }
+    const school = await School.findById(admin.school);
+    if (!school) {
+      throw new ApiError(404, "No school associated with this admin");
+    }
 
-      return res.status(200).json(new ApiResponse(200, admin, "Admin details fetched successfully"));
-  } catch (err) {
-      console.error("Error fetching admin details:", err);
-      return res.status(500).json(new ApiResponse(500, null, "Internal server error"));
+    const students = await Student.find({ school: school._id });
+
+    res.status(200).json(
+      new ApiResponse(200, students, "Students fetched successfully")
+    );
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const getEmployeesByAdminID = async (req, res) => {
+  try {
+    const admin = await Admin.findById(req.params.id).select("-password -refreshToken");
+
+    if (!admin) {
+      throw new ApiError(404, "No admin found");
+    }
+
+    const school = await School.findById(admin.school);
+    if (!school) {
+      throw new ApiError(404, "No school associated with this admin");
+    }
+
+    const employees = await Teacher.find({ school: school._id });
+
+    res.status(200).json(
+      new ApiResponse(200, employees, "Employees fetched successfully")
+    );
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const getFinancesByAdminID = async (req, res) => {
+  try {
+    const admin = await Admin.findById(req.params.id).select("-password -refreshToken");
+
+    if (!admin) {
+      throw new ApiError(404, "No admin found");
+    }
+
+    const school = await School.findById(admin.school);
+    if (!school) {
+      throw new ApiError(404, "No school associated with this admin");
+    }
+
+    const finances = await Finance.find({ school: school._id });
+
+    res.status(200).json(
+      new ApiResponse(200, finances, "Finances fetched successfully")
+    );
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const getEventsByAdminID = async (req, res) => {
+  try {
+    const admin = await Admin.findById(req.params.id).select("-password -refreshToken");
+
+    if (!admin) {
+      throw new ApiError(404, "No admin found");
+    }
+
+    const school = await School.findById(admin.school);
+    if (!school) {
+      throw new ApiError(404, "No school associated with this admin");
+    }
+
+    const events = await Event.find({ school: school._id });
+
+    res.status(200).json(
+      new ApiResponse(200, events, "Events fetched successfully")
+    );
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const getNotificationsByAdminID = async (req, res) => {
+  try {
+    const admin = await Admin.findById(req.params.id).select("-password -refreshToken");
+
+    if (!admin) {
+      throw new ApiError(404, "No admin found");
+    }
+
+    const school = await School.findById(admin.school);
+    if (!school) {
+      throw new ApiError(404, "No school associated with this admin");
+    }
+
+    const notifications = await Notification.find({ school: school._id });
+
+    res.status(200).json(
+      new ApiResponse(200, notifications, "Notifications fetched successfully")
+    );
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const getNoticesByAdminID = async (req, res) => {
+  try {
+    const admin = await Admin.findById(req.params.id).select("-password -refreshToken");
+
+    if (!admin) {
+      throw new ApiError(404, "No admin found");
+    }
+
+    const school = await School.findById(admin.school);
+    if (!school) {
+      throw new ApiError(404, "No school associated with this admin");
+    }
+
+    const notices = await Notice.find({ school: school._id });
+
+    res.status(200).json(
+      new ApiResponse(200, notices, "Notices fetched successfully")
+    );
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const getAdminAccountDetailsByAdminID = async (req, res) => {
+  try {
+    const admin = await Admin.findById(req.params.id).select("-password -refreshToken");
+
+    if (!admin) {
+      throw new ApiError(404, "No admin found");
+    }
+
+    const school = await School.findById(admin.school);
+    if (!school) {
+      throw new ApiError(404, "No school associated with this admin");
+    }
+
+    const accountDetails = await AdminAccount.findOne({ school: school._id });
+
+    if (!accountDetails) {
+      throw new ApiError(404, "No account details found for this admin");
+    }
+
+    res.status(200).json(
+      new ApiResponse(200, accountDetails, "Account details fetched successfully")
+    );
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -460,7 +709,14 @@ module.exports = {
   getAdminDetail,
   updateAdmin,
   createExam,
-
   findAvailableTeachers,
   createAccessKeyAndAssignSchedule,
+  getAdminAccountDetailsByAdminID,
+  getAllStudentsByAdminID,
+  getEmployeesByAdminID,
+  getEventsByAdminID,
+  getFinancesByAdminID,
+  getNoticesByAdminID,
+  getNotificationsByAdminID,
+
 };
