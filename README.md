@@ -1,4 +1,4 @@
-# School Management System API
+# RadiantEd - School Management System API
 
 ![School Management System](https://img.shields.io/badge/School%20Management-System-blue)
 ![Express.js](https://img.shields.io/badge/Express.js-4.x-orange)
